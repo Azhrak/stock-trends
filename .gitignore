@@ -50,6 +50,15 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+.coverage.*
+coverage.xml
+htmlcov/
+.noxfile_*
+
+# PyTest and testing
+.pytest_cache/
+.cache/
+test-reports/
 
 # Translations
 *.mo
@@ -161,19 +170,41 @@ cython_debug/
 # Project specific ignores
 data/raw/
 data/processed/
+
+# Model outputs and results
 models/*.pkl
 models/*.joblib
 models/*.pt
 models/*.pth
+models/*_results_*.json
+models/*_summary_*.json
+models/*_comparison_*.json
+models/*_backtest_*.json
+models/model_comparison_report.json
+
+# Generated reports and visualizations
 reports/*.png
 reports/*.jpg
 reports/*.jpeg
+reports/*.pdf
+reports/*_report_*.json
+reports/*_explainability_*.json
+reports/*_explanation_*.json
+reports/*_validation_*.json
+
+# Log files (training and application logs)
+*.log
+training*.log
+transformer*.log
+logs/
 
 # Keep example files but ignore actual model outputs
 !models/.gitkeep
+!models/README.md
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !reports/.gitkeep
+!reports/README.md
 
 # OS specific
 .DS_Store
@@ -192,3 +223,25 @@ Thumbs.db
 # Logs
 logs/
 *.log
+
+# ML/Data Science specific
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.dill
+checkpoints/
+wandb/
+mlruns/
+.tensorboard/
+
+# Jupyter Notebook checkpoints and outputs
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# API Keys and secrets
+.env
+.env.local
+.env.*.local
+secrets.json
+api_keys.json
