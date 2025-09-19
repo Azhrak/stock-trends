@@ -85,6 +85,188 @@ uv run python cli.py validate
 uv run python cli.py all
 ```
 
+## How to Use This Tool
+
+### What This Tool Does
+This tool predicts **12-week forward stock returns** using machine learning models trained on technical analysis indicators. It helps you:
+
+1. **Identify trending stocks** - Find stocks likely to move up or down over the next 3 months
+2. **Understand why predictions work** - SHAP analysis explains which technical indicators drive predictions
+3. **Validate trading strategies** - Realistic backtesting with transaction costs and slippage
+4. **Compare ML approaches** - LightGBM vs Transformer models with performance metrics
+
+### Input: What You Provide
+The tool works with **any publicly traded stocks**. You can analyze:
+
+```python
+# Default: Large-cap tech stocks (in src/ingestion/equity_prices.py)
+DEFAULT_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX"]
+
+# Customize: Edit the ticker list to analyze your stocks
+CUSTOM_TICKERS = ["SPY", "QQQ", "AAPL", "MSFT", "AMD", "INTC"]  # ETFs and individual stocks
+```
+
+**To analyze your own stocks:**
+1. Edit `src/ingestion/equity_prices.py` 
+2. Replace `DEFAULT_TICKERS` with your stock list
+3. Run the pipeline: `make all`
+
+### Expected Outcomes: What You Get
+
+#### 1. **Prediction Models** (`models/` directory)
+- **LightGBM Model**: Fast, interpretable gradient boosting
+- **Transformer Model**: Deep learning for complex patterns
+- **Performance Metrics**: RMSE, directional accuracy, statistical significance
+
+#### 2. **Stock Predictions** (`reports/` directory)
+- **Individual stock forecasts**: 12-week return predictions for each ticker
+- **Confidence intervals**: Prediction uncertainty ranges
+- **Directional signals**: Buy/Hold/Sell recommendations based on predicted returns
+
+#### 3. **Feature Importance Analysis**
+- **Top predictive indicators**: Which technical analysis metrics matter most
+- **SHAP explanations**: Why specific predictions were made
+- **Feature categories**: Price momentum, volume patterns, volatility measures
+
+#### 4. **Backtesting Results**
+- **Historical performance**: How well predictions would have worked in the past
+- **Risk-adjusted returns**: Sharpe ratios, maximum drawdown
+- **Transaction cost impact**: Realistic trading simulation with fees
+
+### Step-by-Step Usage Guide
+
+#### Step 1: Complete Pipeline (Recommended First Run)
+```bash
+make all
+# This runs: data download → feature engineering → model training → backtesting → analysis
+# Takes: 15-30 minutes depending on number of stocks and internet speed
+```
+
+#### Step 2: Analyze Results
+```bash
+# Check what was generated
+ls reports/           # Analysis reports and visualizations
+ls models/           # Trained models and performance metrics
+
+# Key files to examine:
+# - reports/model_comparison.json    # Performance comparison
+# - reports/feature_importance.png   # Which indicators matter most
+# - reports/shap_analysis.png        # Prediction explanations
+# - reports/backtest_results.json    # Trading simulation results
+```
+
+#### Step 3: Interpret Predictions
+```python
+# Example: Reading model predictions
+import json
+
+# Load performance comparison
+with open('models/model_comparison.json') as f:
+    comparison = json.load(f)
+    
+print(f"Best model: {comparison['best_model']['name']}")
+print(f"Test RMSE: {comparison['best_model']['test_rmse']:.4f}")
+print(f"Directional accuracy: {comparison['best_model']['directional_accuracy']:.1%}")
+
+# Load individual stock predictions (if available)
+with open('reports/stock_predictions.json') as f:
+    predictions = json.load(f)
+    
+for stock, pred in predictions.items():
+    direction = "UP" if pred['predicted_return'] > 0.02 else "DOWN" if pred['predicted_return'] < -0.02 else "HOLD"
+    print(f"{stock}: {direction} ({pred['predicted_return']:+.1%} predicted return)")
+```
+
+#### Step 4: Customize for Your Use Case
+
+**A. Analyze Different Stocks**
+```bash
+# Edit src/ingestion/equity_prices.py
+# Change DEFAULT_TICKERS = ["YOUR", "STOCKS", "HERE"]
+make data features models  # Re-run pipeline with new stocks
+```
+
+**B. Adjust Prediction Horizon**
+```bash
+# Edit src/features/feature_engineering.py
+# Change TARGET_HORIZON = 8  # For 8-week predictions instead of 12
+make features models       # Re-train with new horizon
+```
+
+**C. Focus on Specific Analysis**
+```bash
+make models     # Only train models (skip data download)
+make explain    # Only generate explainability reports
+make backtest   # Only run trading simulation
+```
+
+### Real-World Application Examples
+
+#### Example 1: Weekly Stock Selection
+```bash
+# 1. Run pipeline on your watchlist
+# 2. Check reports/stock_predictions.json for top-ranked stocks
+# 3. Use SHAP analysis to understand why certain stocks are predicted to rise
+# 4. Consider position sizing based on prediction confidence
+```
+
+#### Example 2: Strategy Validation
+```bash
+# 1. Backtest results show historical performance
+# 2. Compare model predictions vs buy-and-hold
+# 3. Analyze transaction costs impact on returns
+# 4. Use feature importance to refine your manual analysis
+```
+
+#### Example 3: Research and Education
+```bash
+# 1. Understand which technical indicators actually predict returns
+# 2. Compare tree-based (LightGBM) vs neural network (Transformer) approaches
+# 3. Learn about realistic trading costs and market frictions
+# 4. Study model explainability with SHAP analysis
+```
+
+### Understanding the Output
+
+**Good Predictions:**
+- Directional accuracy > 60% (better than random)
+- Low RMSE values (< 0.15 for 12-week returns)
+- Consistent performance across multiple validation splits
+- Clear feature importance patterns
+
+**Limitations to Remember:**
+- Past performance doesn't guarantee future results
+- Models work best in trending markets, struggle in highly volatile periods
+- Transaction costs significantly impact short-term trading strategies
+- Predictions are probabilities, not certainties
+
+**When to Trust Predictions:**
+- High model confidence (low prediction variance)
+- Strong technical indicator alignment
+- Consistent with broader market trends
+- Validated on recent out-of-sample data
+
+### Performance & Requirements
+
+**Expected Runtime:**
+- **Complete pipeline (`make all`)**: 15-30 minutes
+  - Data download: 2-5 minutes (depends on internet speed)
+  - Feature engineering: 3-8 minutes 
+  - Model training: 8-15 minutes (LightGBM + Transformer)
+  - Backtesting & analysis: 2-5 minutes
+
+**System Requirements:**
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 2GB free space (for data, models, reports)
+- **CPU**: Multi-core recommended for faster training
+- **GPU**: Optional (Transformer training can benefit from CUDA)
+
+**Data Requirements:**
+- **Minimum**: 2 years of historical data per stock
+- **Recommended**: 5+ years for robust feature engineering
+- **Frequency**: Daily stock prices (automatically downloaded)
+- **Sources**: Yahoo Finance (free), FRED & Finnhub (optional with API keys)
+
 ## Project Structure
 
 ```
@@ -180,7 +362,7 @@ The pipeline generates comprehensive reports in the `reports/` directory:
 - `validation_report_*.json` - Model validation and performance summary
 - `model_comparison_report.json` - Head-to-head model comparison
 
-## 🧪 Testing
+## Testing
 
 The project includes comprehensive unit tests covering:
 
@@ -198,7 +380,7 @@ make test
 python cli.py test --coverage  # with coverage report
 ```
 
-## 🔍 Model Interpretability
+## Model Interpretability
 
 ### Top Features (by SHAP importance)
 1. **OBV** (On-Balance Volume) - 0.0058
@@ -275,7 +457,7 @@ make format   # Auto-format code
 - Unit tests validate reproducibility across runs
 - Virtual environment pins exact dependency versions
 
-## 🤝 Contributing
+## Contributing
 
 1. Follow existing code structure and patterns
 2. Add unit tests for new functionality
@@ -283,11 +465,11 @@ make format   # Auto-format code
 4. Update documentation as needed
 5. Use black code formatting: `make format`
 
-## 📄 License
+## License
 
 This project is for educational and research purposes. See individual data source terms for usage restrictions.
 
-## 🔗 References
+## References
 
 - **Technical Analysis**: Murphy, J. "Technical Analysis of the Financial Markets"
 - **SHAP**: Lundberg, S. "A Unified Approach to Interpreting Model Predictions"
@@ -297,3 +479,76 @@ This project is for educational and research purposes. See individual data sourc
 ---
 
 **Built with dedication for the stock prediction community**
+
+## Troubleshooting
+
+### Common Issues & Solutions
+
+**Problem: "uv is not installed" error**
+```bash
+# Solution: Install uv first
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# or: brew install uv
+# Then restart your terminal
+```
+
+**Problem: Data download fails or is very slow**
+```bash
+# Solution 1: Check internet connection and retry
+make clean && make data
+
+# Solution 2: Reduce stock list for testing
+# Edit src/ingestion/equity_prices.py, use fewer tickers like ["AAPL", "MSFT"]
+```
+
+**Problem: Model training takes too long**
+```bash
+# Solution 1: Use CPU-only for faster setup
+# Edit src/models/train_transformer.py, set device='cpu'
+
+# Solution 2: Train only one model type
+make setup
+uv run python src/models/train_lightgbm.py  # Fast gradient boosting only
+```
+
+**Problem: "Permission denied" or file access errors**
+```bash
+# Solution: Check file permissions and available disk space
+chmod +x cli.py
+df -h  # Check disk space
+```
+
+**Problem: Missing dependencies or import errors**
+```bash
+# Solution: Re-sync environment
+make clean
+make setup
+python cli.py validate  # Should show all green checkmarks
+```
+
+**Problem: API rate limits (with API keys configured)**
+```bash
+# Solution: The tool automatically handles rate limits, but if you see errors:
+# - FRED API: Wait 1 minute between runs
+# - Finnhub API: Wait 1 minute between runs
+# - Or run without API keys (limited features but fully functional)
+```
+
+**Problem: Predictions seem unrealistic**
+```bash
+# Solution: This is normal! Remember:
+# - Stock prediction is inherently uncertain
+# - Models predict probabilities, not certainties
+# - Check model confidence in reports/model_comparison.json
+# - Directional accuracy >60% is considered good
+```
+
+### Getting Help
+
+1. **Validate setup**: `python cli.py validate` should pass all checks
+2. **Check logs**: Error messages usually indicate the specific issue
+3. **Start simple**: Try with just 2-3 stocks first
+4. **Review documentation**: Each module has detailed docstrings
+5. **Check disk space**: Pipeline generates ~1-2GB of data and models
+
+## Contributing
