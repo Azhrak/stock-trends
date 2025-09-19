@@ -1,5 +1,8 @@
 """
-Train baseline models on multiple splits with clear progress monitoring.
+Train LightGBM model on multiple splits with progress monitoring.
+
+This module handles LightGBM model training across all time-series splits
+with detailed progress tracking, time estimates, and comprehensive logging.
 """
 
 import sys
