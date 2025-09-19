@@ -74,7 +74,7 @@ models: ## Train baseline models (LightGBM and Transformer)
 	@echo "$(YELLOW)Training baseline models...$(RESET)"
 	mkdir -p $(MODELS_DIR)
 	@echo "Training LightGBM model..."
-	$(PYTHON) $(SRC_DIR)/models/train_progressive.py
+	$(PYTHON) $(SRC_DIR)/models/train_lightgbm.py
 	@echo "Training Transformer model..."
 	$(PYTHON) $(SRC_DIR)/models/train_transformer.py
 	@echo "Comparing models..."

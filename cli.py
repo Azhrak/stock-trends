@@ -105,7 +105,7 @@ class StockTrendsCLI:
         models_dir.mkdir(exist_ok=True)
         
         steps = [
-            ("Training LightGBM", "models/train_progressive.py"),
+            ("Training LightGBM", "models/train_lightgbm.py"),
             ("Training Transformer", "models/train_transformer.py"),
             ("Comparing models", "models/compare_models.py")
         ]
