@@ -1,0 +1,1 @@
+# Test module for stock trends prediction pipeline

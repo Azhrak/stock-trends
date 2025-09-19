@@ -1,0 +1,743 @@
+{
+  "model_type": "lightgbm",
+  "analysis_date": "2025-09-19T22:58:38.687731",
+  "sections": {
+    "feature_importance": {
+      "feature_importance": [
+        {
+          "feature": "obv",
+          "mean_importance": 20.8,
+          "std_importance": 17.093858546273278,
+          "min_importance": 0.0,
+          "max_importance": 39.0
+        },
+        {
+          "feature": "obv_sma_12",
+          "mean_importance": 18.2,
+          "std_importance": 12.19426094521517,
+          "min_importance": 4.0,
+          "max_importance": 32.0
+        },
+        {
+          "feature": "atr_pct_26w",
+          "mean_importance": 16.8,
+          "std_importance": 14.481022063376603,
+          "min_importance": 0.0,
+          "max_importance": 36.0
+        },
+        {
+          "feature": "volatility_12w",
+          "mean_importance": 16.6,
+          "std_importance": 15.868207208125307,
+          "min_importance": 0.0,
+          "max_importance": 38.0
+        },
+        {
+          "feature": "support_52w",
+          "mean_importance": 15.4,
+          "std_importance": 9.710818709048173,
+          "min_importance": 4.0,
+          "max_importance": 27.0
+        },
+        {
+          "feature": "volatility_26w",
+          "mean_importance": 15.4,
+          "std_importance": 8.706319543871567,
+          "min_importance": 4.0,
+          "max_importance": 28.0
+        },
+        {
+          "feature": "volume_sma_26",
+          "mean_importance": 10.8,
+          "std_importance": 9.5236547606473,
+          "min_importance": 2.0,
+          "max_importance": 25.0
+        },
+        {
+          "feature": "macd_signal",
+          "mean_importance": 9.8,
+          "std_importance": 5.540758070878027,
+          "min_importance": 1.0,
+          "max_importance": 16.0
+        },
+        {
+          "feature": "price_position_26w",
+          "mean_importance": 9.2,
+          "std_importance": 12.153188881935472,
+          "min_importance": 1.0,
+          "max_importance": 30.0
+        },
+        {
+          "feature": "atr_pct_12w",
+          "mean_importance": 8.8,
+          "std_importance": 7.661592523751182,
+          "min_importance": 1.0,
+          "max_importance": 20.0
+        },
+        {
+          "feature": "atr_26w",
+          "mean_importance": 8.6,
+          "std_importance": 8.473488065725943,
+          "min_importance": 0.0,
+          "max_importance": 19.0
+        },
+        {
+          "feature": "ema_52",
+          "mean_importance": 8.2,
+          "std_importance": 9.038805230781334,
+          "min_importance": 0.0,
+          "max_importance": 21.0
+        },
+        {
+          "feature": "volume_sma_4",
+          "mean_importance": 8.2,
+          "std_importance": 8.700574693662482,
+          "min_importance": 0.0,
+          "max_importance": 18.0
+        },
+        {
+          "feature": "price_sma_26_ratio",
+          "mean_importance": 7.2,
+          "std_importance": 12.911235417263526,
+          "min_importance": 0.0,
+          "max_importance": 30.0
+        },
+        {
+          "feature": "macd",
+          "mean_importance": 7.0,
+          "std_importance": 7.0710678118654755,
+          "min_importance": 1.0,
+          "max_importance": 19.0
+        },
+        {
+          "feature": "price_sma_52_ratio",
+          "mean_importance": 6.8,
+          "std_importance": 7.328028384224504,
+          "min_importance": 0.0,
+          "max_importance": 17.0
+        },
+        {
+          "feature": "macd_histogram",
+          "mean_importance": 6.8,
+          "std_importance": 7.155417527999327,
+          "min_importance": 0.0,
+          "max_importance": 17.0
+        },
+        {
+          "feature": "sma_52",
+          "mean_importance": 6.6,
+          "std_importance": 7.3688533707762165,
+          "min_importance": 0.0,
+          "max_importance": 16.0
+        },
+        {
+          "feature": "resistance_52w",
+          "mean_importance": 6.2,
+          "std_importance": 5.974947698515862,
+          "min_importance": 1.0,
+          "max_importance": 16.0
+        },
+        {
+          "feature": "price_position_52w",
+          "mean_importance": 6.0,
+          "std_importance": 6.0,
+          "min_importance": 0.0,
+          "max_importance": 16.0
+        },
+        {
+          "feature": "price_position_12w",
+          "mean_importance": 5.8,
+          "std_importance": 3.492849839314596,
+          "min_importance": 1.0,
+          "max_importance": 10.0
+        },
+        {
+          "feature": "support_26w",
+          "mean_importance": 5.8,
+          "std_importance": 4.207136793592526,
+          "min_importance": 1.0,
+          "max_importance": 11.0
+        },
+        {
+          "feature": "price_ema_52_ratio",
+          "mean_importance": 5.2,
+          "std_importance": 4.494441010848846,
+          "min_importance": 2.0,
+          "max_importance": 13.0
+        },
+        {
+          "feature": "rsi_14w",
+          "mean_importance": 5.0,
+          "std_importance": 5.0,
+          "min_importance": 0.0,
+          "max_importance": 13.0
+        },
+        {
+          "feature": "roc_26w",
+          "mean_importance": 4.8,
+          "std_importance": 4.919349550499538,
+          "min_importance": 0.0,
+          "max_importance": 11.0
+        },
+        {
+          "feature": "price_sma_12_ratio",
+          "mean_importance": 4.6,
+          "std_importance": 4.669047011971501,
+          "min_importance": 0.0,
+          "max_importance": 12.0
+        },
+        {
+          "feature": "price_ema_26_ratio",
+          "mean_importance": 4.6,
+          "std_importance": 3.847076812334269,
+          "min_importance": 0.0,
+          "max_importance": 8.0
+        },
+        {
+          "feature": "resistance_12w",
+          "mean_importance": 4.4,
+          "std_importance": 5.029910535983717,
+          "min_importance": 0.0,
+          "max_importance": 12.0
+        },
+        {
+          "feature": "support_12w",
+          "mean_importance": 3.8,
+          "std_importance": 4.43846820423443,
+          "min_importance": 0.0,
+          "max_importance": 11.0
+        },
+        {
+          "feature": "atr_pct_4w",
+          "mean_importance": 3.6,
+          "std_importance": 4.09878030638384,
+          "min_importance": 0.0,
+          "max_importance": 10.0
+        },
+        {
+          "feature": "volume_sma_12",
+          "mean_importance": 3.6,
+          "std_importance": 3.507135583350036,
+          "min_importance": 0.0,
+          "max_importance": 7.0
+        },
+        {
+          "feature": "close",
+          "mean_importance": 3.6,
+          "std_importance": 4.33589667773576,
+          "min_importance": 1.0,
+          "max_importance": 11.0
+        },
+        {
+          "feature": "atr_4w",
+          "mean_importance": 3.4,
+          "std_importance": 5.412947441089743,
+          "min_importance": 0.0,
+          "max_importance": 13.0
+        },
+        {
+          "feature": "avg_daily_volume_lag_12",
+          "mean_importance": 3.4,
+          "std_importance": 4.277849927241487,
+          "min_importance": 0.0,
+          "max_importance": 9.0
+        },
+        {
+          "feature": "resistance_26w",
+          "mean_importance": 2.8,
+          "std_importance": 3.8987177379235853,
+          "min_importance": 0.0,
+          "max_importance": 8.0
+        },
+        {
+          "feature": "roc_12w",
+          "mean_importance": 2.6,
+          "std_importance": 2.701851217221259,
+          "min_importance": 0.0,
+          "max_importance": 7.0
+        },
+        {
+          "feature": "volume_ratio_26",
+          "mean_importance": 2.6,
+          "std_importance": 2.7928480087537886,
+          "min_importance": 0.0,
+          "max_importance": 6.0
+        },
+        {
+          "feature": "atr_12w",
+          "mean_importance": 2.4,
+          "std_importance": 3.049590136395381,
+          "min_importance": 0.0,
+          "max_importance": 7.0
+        },
+        {
+          "feature": "volatility_4w",
+          "mean_importance": 2.4,
+          "std_importance": 2.8809720581775866,
+          "min_importance": 0.0,
+          "max_importance": 6.0
+        },
+        {
+          "feature": "ema_26",
+          "mean_importance": 2.4,
+          "std_importance": 2.6076809620810595,
+          "min_importance": 0.0,
+          "max_importance": 6.0
+        },
+        {
+          "feature": "open",
+          "mean_importance": 2.4,
+          "std_importance": 1.6733200530681511,
+          "min_importance": 0.0,
+          "max_importance": 4.0
+        },
+        {
+          "feature": "sma_12",
+          "mean_importance": 2.4,
+          "std_importance": 2.5099800796022267,
+          "min_importance": 0.0,
+          "max_importance": 5.0
+        },
+        {
+          "feature": "volume_lag_12",
+          "mean_importance": 2.4,
+          "std_importance": 2.6076809620810595,
+          "min_importance": 0.0,
+          "max_importance": 6.0
+        },
+        {
+          "feature": "price_ema_12_ratio",
+          "mean_importance": 2.2,
+          "std_importance": 1.9235384061671346,
+          "min_importance": 0.0,
+          "max_importance": 5.0
+        },
+        {
+          "feature": "roc_4w",
+          "mean_importance": 2.0,
+          "std_importance": 2.8284271247461903,
+          "min_importance": 0.0,
+          "max_importance": 6.0
+        },
+        {
+          "feature": "high",
+          "mean_importance": 1.8,
+          "std_importance": 1.6431676725154984,
+          "min_importance": 0.0,
+          "max_importance": 4.0
+        },
+        {
+          "feature": "ema_4",
+          "mean_importance": 1.8,
+          "std_importance": 2.1679483388678804,
+          "min_importance": 0.0,
+          "max_importance": 5.0
+        },
+        {
+          "feature": "sma_26",
+          "mean_importance": 1.8,
+          "std_importance": 0.8366600265340756,
+          "min_importance": 1.0,
+          "max_importance": 3.0
+        },
+        {
+          "feature": "low_lag_4",
+          "mean_importance": 1.6,
+          "std_importance": 2.5099800796022267,
+          "min_importance": 0.0,
+          "max_importance": 6.0
+        },
+        {
+          "feature": "open_lag_12",
+          "mean_importance": 1.6,
+          "std_importance": 1.3416407864998738,
+          "min_importance": 0.0,
+          "max_importance": 3.0
+        }
+      ],
+      "category_analysis": {
+        "feature_categories": {
+          "obv": "other",
+          "obv_sma_12": "technical",
+          "atr_pct_26w": "technical",
+          "volatility_12w": "volatility",
+          "support_52w": "other",
+          "volatility_26w": "volatility",
+          "volume_sma_26": "volume",
+          "macd_signal": "technical",
+          "price_position_26w": "other",
+          "atr_pct_12w": "technical",
+          "atr_26w": "technical",
+          "ema_52": "technical",
+          "volume_sma_4": "volume",
+          "price_sma_26_ratio": "technical",
+          "macd": "other",
+          "price_sma_52_ratio": "technical",
+          "macd_histogram": "technical",
+          "sma_52": "technical",
+          "resistance_52w": "other",
+          "price_position_52w": "other",
+          "price_position_12w": "other",
+          "support_26w": "other",
+          "price_ema_52_ratio": "technical",
+          "rsi_14w": "technical",
+          "roc_26w": "momentum",
+          "price_sma_12_ratio": "technical",
+          "price_ema_26_ratio": "technical",
+          "resistance_12w": "other",
+          "support_12w": "other",
+          "atr_pct_4w": "technical",
+          "volume_sma_12": "volume",
+          "close": "price",
+          "atr_4w": "technical",
+          "avg_daily_volume_lag_12": "volume",
+          "resistance_26w": "other",
+          "roc_12w": "momentum",
+          "volume_ratio_26": "volume",
+          "atr_12w": "technical",
+          "volatility_4w": "volatility",
+          "ema_26": "technical",
+          "open": "price",
+          "sma_12": "technical",
+          "volume_lag_12": "volume",
+          "price_ema_12_ratio": "technical",
+          "roc_4w": "momentum",
+          "high": "price",
+          "ema_4": "technical",
+          "sma_26": "technical",
+          "low_lag_4": "price",
+          "open_lag_12": "price"
+        },
+        "category_stats": {
+          "price": {
+            "mean_importance": 2.2,
+            "total_importance": 11.0,
+            "feature_count": 5,
+            "top_features": [
+              "close",
+              "open",
+              "high",
+              "low_lag_4",
+              "open_lag_12"
+            ]
+          },
+          "volume": {
+            "mean_importance": 5.166666666666667,
+            "total_importance": 31.0,
+            "feature_count": 6,
+            "top_features": [
+              "volume_sma_26",
+              "volume_sma_4",
+              "volume_sma_12",
+              "avg_daily_volume_lag_12",
+              "volume_ratio_26"
+            ]
+          },
+          "technical": {
+            "mean_importance": 6.236363636363637,
+            "total_importance": 137.20000000000002,
+            "feature_count": 22,
+            "top_features": [
+              "obv_sma_12",
+              "atr_pct_26w",
+              "macd_signal",
+              "atr_pct_12w",
+              "atr_26w"
+            ]
+          },
+          "volatility": {
+            "mean_importance": 11.466666666666667,
+            "total_importance": 34.4,
+            "feature_count": 3,
+            "top_features": [
+              "volatility_12w",
+              "volatility_26w",
+              "volatility_4w"
+            ]
+          },
+          "momentum": {
+            "mean_importance": 3.1333333333333333,
+            "total_importance": 9.4,
+            "feature_count": 3,
+            "top_features": [
+              "roc_26w",
+              "roc_12w",
+              "roc_4w"
+            ]
+          },
+          "other": {
+            "mean_importance": 7.927272727272728,
+            "total_importance": 87.2,
+            "feature_count": 11,
+            "top_features": [
+              "obv",
+              "support_52w",
+              "price_position_26w",
+              "macd",
+              "resistance_52w"
+            ]
+          }
+        }
+      },
+      "stability_analysis": {
+        "overall_stability": 0.5643457273268188,
+        "feature_stability": {
+          "feature_0": 0.615911621788925,
+          "feature_1": 0.5505102572168219,
+          "feature_2": 0.44948974278317805,
+          "feature_3": 0.4814028794995324,
+          "feature_4": 0.5166852264521172,
+          "feature_5": 1.0,
+          "feature_6": 1.0,
+          "feature_7": 0.4285714285714286,
+          "feature_8": 0.4285714285714286,
+          "feature_9": 1.0,
+          "feature_10": 1.0,
+          "feature_11": 0.44948974278317805,
+          "feature_12": 0.5166852264521172,
+          "feature_13": 0.5785592784717611,
+          "feature_14": 0.33333333333333326,
+          "feature_15": 0.4285714285714286,
+          "feature_16": 0.33333333333333326,
+          "feature_17": 0.4285714285714286,
+          "feature_18": 0.40687819885451115,
+          "feature_19": 1.0,
+          "feature_20": 1.0,
+          "feature_21": 0.44948974278317805,
+          "feature_22": 0.5505102572168218,
+          "feature_23": 0.41612544004152563,
+          "feature_24": 0.47722557505166113,
+          "feature_25": 0.33333333333333326,
+          "feature_26": 0.33333333333333326,
+          "feature_27": 0.3333333333333333,
+          "feature_28": 0.5071443154640985,
+          "feature_29": 1.0,
+          "feature_30": 0.4285714285714286,
+          "feature_31": 0.5714285714285714,
+          "feature_32": 0.4494897427831781,
+          "feature_33": 0.44948974278317805,
+          "feature_34": 0.47722557505166113,
+          "feature_35": 0.5071443154640985,
+          "feature_36": 1.0,
+          "feature_37": 0.5505102572168218,
+          "feature_38": 0.47050844136432274,
+          "feature_39": 1.0,
+          "feature_40": 0.33333333333333326,
+          "feature_41": 0.5071443154640985,
+          "feature_42": 0.4814028794995324,
+          "feature_43": 0.44948974278317805,
+          "feature_44": 1.0,
+          "feature_45": 0.5166852264521172,
+          "feature_46": 0.5505102572168219,
+          "feature_47": 0.5241494687109106,
+          "feature_48": 0.5611579162240662,
+          "feature_49": 0.7063445301348438,
+          "feature_50": 0.5071443154640985,
+          "feature_51": 0.3840376863534324,
+          "feature_52": 0.5720731232448033,
+          "feature_53": 0.5003448277502154,
+          "feature_54": 0.5035446728630975,
+          "feature_55": 0.509195934685026,
+          "feature_56": 0.563994366550418,
+          "feature_57": 0.48223566912279575,
+          "feature_58": 0.5390843282580805,
+          "feature_59": 0.6641604261442342,
+          "feature_60": 0.4125468917674981,
+          "feature_61": 0.49545416973504003,
+          "feature_62": 0.4680519134245302,
+          "feature_63": 0.5622020085130713,
+          "feature_64": 0.5315559378966299,
+          "feature_65": 0.5646637482457821,
+          "feature_66": 1.0,
+          "feature_67": 0.44151844011225283,
+          "feature_68": 0.518278362750894,
+          "feature_69": 0.5217391304347826,
+          "feature_70": 0.5278640450004206,
+          "feature_71": 0.5253458619602988,
+          "feature_72": 0.6641454135704202,
+          "feature_73": 0.5151515151515151,
+          "feature_74": 0.5130762300348204,
+          "feature_75": 1.0,
+          "feature_76": 0.5343721981481256,
+          "feature_77": 0.33333333333333326,
+          "feature_78": 0.5590578408193646,
+          "feature_79": 0.5100040032032036,
+          "feature_80": 0.5763495214995135,
+          "feature_81": 0.6252817511937635,
+          "feature_82": 0.494443758403985,
+          "feature_83": 0.4890676237668166,
+          "feature_84": 0.6499254921229716,
+          "feature_85": 0.44535500776183073,
+          "feature_86": 0.6065056592513827,
+          "feature_87": 0.458392358559689,
+          "feature_88": 0.5370682939877813,
+          "feature_89": 0.639385650360202,
+          "feature_90": 0.5278640450004206
+        },
+        "most_stable_features": [
+          [
+            "feature_5",
+            1.0
+          ],
+          [
+            "feature_6",
+            1.0
+          ],
+          [
+            "feature_9",
+            1.0
+          ],
+          [
+            "feature_10",
+            1.0
+          ],
+          [
+            "feature_19",
+            1.0
+          ],
+          [
+            "feature_20",
+            1.0
+          ],
+          [
+            "feature_29",
+            1.0
+          ],
+          [
+            "feature_36",
+            1.0
+          ],
+          [
+            "feature_39",
+            1.0
+          ],
+          [
+            "feature_44",
+            1.0
+          ]
+        ],
+        "least_stable_features": [
+          [
+            "feature_60",
+            0.4125468917674981
+          ],
+          [
+            "feature_18",
+            0.40687819885451115
+          ],
+          [
+            "feature_51",
+            0.3840376863534324
+          ],
+          [
+            "feature_27",
+            0.3333333333333333
+          ],
+          [
+            "feature_14",
+            0.33333333333333326
+          ],
+          [
+            "feature_16",
+            0.33333333333333326
+          ],
+          [
+            "feature_25",
+            0.33333333333333326
+          ],
+          [
+            "feature_26",
+            0.33333333333333326
+          ],
+          [
+            "feature_40",
+            0.33333333333333326
+          ],
+          [
+            "feature_77",
+            0.33333333333333326
+          ]
+        ]
+      },
+      "top_features": [
+        "obv",
+        "obv_sma_12",
+        "atr_pct_26w",
+        "volatility_12w",
+        "support_52w",
+        "volatility_26w",
+        "volume_sma_26",
+        "macd_signal",
+        "price_position_26w",
+        "atr_pct_12w",
+        "atr_26w",
+        "ema_52",
+        "volume_sma_4",
+        "price_sma_26_ratio",
+        "macd",
+        "price_sma_52_ratio",
+        "macd_histogram",
+        "sma_52",
+        "resistance_52w",
+        "price_position_52w"
+      ],
+      "model_performance": {
+        "mean_train_rmse": 0.10936271340733072,
+        "std_train_rmse": 0.0076256529213336215,
+        "min_train_rmse": 0.09957361360022389,
+        "max_train_rmse": 0.11837568266333265,
+        "mean_val_rmse": 0.1027708254105421,
+        "std_val_rmse": 0.012481125477109854,
+        "min_val_rmse": 0.08786649921025465,
+        "max_val_rmse": 0.12010325717718694,
+        "mean_test_rmse": 0.10966638849507851,
+        "std_test_rmse": 0.01536414054298992,
+        "min_test_rmse": 0.09209600734231753,
+        "max_test_rmse": 0.1344647319954987,
+        "mean_train_mae": 0.07364291200572322,
+        "std_train_mae": 0.0027898871059597306,
+        "min_train_mae": 0.07020581004093042,
+        "max_train_mae": 0.07657438110973448,
+        "mean_val_mae": 0.0749933934472423,
+        "std_val_mae": 0.007127353116529279,
+        "min_val_mae": 0.06510076159473012,
+        "max_val_mae": 0.08545017641632002,
+        "mean_test_mae": 0.07981603680944875,
+        "std_test_mae": 0.006046768364798151,
+        "min_test_mae": 0.06971711542570158,
+        "max_test_mae": 0.08512929103176708,
+        "mean_train_dir_accuracy": 0.701664603268204,
+        "std_train_dir_accuracy": 0.008917138901571288,
+        "min_train_dir_accuracy": 0.6859468258274553,
+        "max_train_dir_accuracy": 0.7118847539015606,
+        "mean_val_dir_accuracy": 0.7056386066763426,
+        "std_val_dir_accuracy": 0.06950274943848922,
+        "min_val_dir_accuracy": 0.5852564102564103,
+        "max_val_dir_accuracy": 0.7993589743589744,
+        "mean_test_dir_accuracy": 0.699141267537494,
+        "std_test_dir_accuracy": 0.07216972112132818,
+        "min_test_dir_accuracy": 0.5935897435897436,
+        "max_test_dir_accuracy": 0.789937106918239
+      }
+    },
+    "prediction_patterns": {},
+    "performance_summary": {
+      "mean_test_rmse": 0.10936644386959608,
+      "std_test_rmse": 0.015661641514758493,
+      "min_test_rmse": 0.09251747620026012,
+      "max_test_rmse": 0.13436363078475683,
+      "mean_test_dir_acc": 0.6989985486211902,
+      "std_test_dir_acc": 0.07295138034948982,
+      "min_test_dir_acc": 0.592948717948718,
+      "max_test_dir_acc": 0.7937106918238994,
+      "mean_val_rmse": 0.10326023785401964,
+      "std_val_rmse": 0.012402864808900155,
+      "min_val_rmse": 0.08856161767479799,
+      "max_val_rmse": 0.12041846219481335,
+      "mean_training_time": 0.4067099571228027,
+      "std_training_time": 0.48176695778024226,
+      "min_training_time": 0.13737130165100098,
+      "max_training_time": 1.3696167469024658
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "total_return": -0.02147258309710154,
+  "annualized_return": -0.028623705597895954,
+  "annualized_volatility": 0.012552035358536872,
+  "sharpe_ratio": -2.280403518655518,
+  "max_drawdown": -0.023808410644333255,
+  "final_portfolio_value": 978527.4169028985,
+  "total_trades": 717,
+  "total_trading_costs": 12817.282388701224,
+  "trading_cost_pct": 0.012817282388701223,
+  "period_days": 273,
+  "backtest_config": {
+    "initial_capital": 1000000,
+    "num_predictions": 1200,
+    "prediction_source": "synthetic",
+    "date_range": "2024-12-20 00:00:00 to 2025-09-19 00:00:00"
+  }
+}
