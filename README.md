@@ -2,7 +2,7 @@
 
 A comprehensive machine learning pipeline for predicting stock price movements using technical analysis, time series modeling, and explainable AI techniques.
 
-## 🎯 Project Overview
+## Project Overview
 
 This project implements a complete end-to-end system for predicting 12-week forward stock returns using:
 
@@ -12,7 +12,7 @@ This project implements a complete end-to-end system for predicting 12-week forw
 - **Explainable AI**: SHAP analysis and feature importance for model interpretability
 - **Realistic Trading Simulation**: Transaction costs, slippage, and position sizing
 
-## 📊 Key Results
+## Key Results
 
 ### Model Performance
 - **Transformer Model**: 0.102 ± 0.005 RMSE, 67.3% ± 5.6% directional accuracy
@@ -24,7 +24,7 @@ This project implements a complete end-to-end system for predicting 12-week forw
 - **Feature categories**: Momentum indicators are highly predictive, volatility measures crucial for risk assessment
 - **Investment implications**: Trend-following strategies may be effective, volume confirmation valuable
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.10+
@@ -60,8 +60,8 @@ cp .env.example .env
 - `FINNHUB_API_KEY` - Finnhub Stock API (financial news data)
 
 **What happens without API keys:**
-- ✅ **Still works**: Stock price data (yfinance), technical analysis, model training, backtesting
-- ⚠️ **Limited**: No macroeconomic data (GDP, inflation) or financial news sentiment
+- **Still works**: Stock price data (yfinance), technical analysis, model training, backtesting
+- **Limited**: No macroeconomic data (GDP, inflation) or financial news sentiment
 
 **Rate Limits (Free Tiers):**
 - FRED API: 120 requests/minute
@@ -76,7 +76,7 @@ python cli.py models       # Train models only
 python cli.py explain      # Generate explainability reports
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 stock-trends/
@@ -100,7 +100,7 @@ stock-trends/
 └── requirements.txt     # Python dependencies
 ```
 
-## 🔧 Available Commands
+## Available Commands
 
 ### Make Commands
 ```bash
@@ -124,7 +124,7 @@ python cli.py test      # Unit tests
 python cli.py validate  # Validate setup
 ```
 
-## 📈 Pipeline Components
+## Pipeline Components
 
 ### 1. Data Ingestion
 - Downloads stock data from Yahoo Finance (yfinance)
@@ -154,7 +154,7 @@ python cli.py validate  # Validate setup
 - **SHAP Analysis**: Individual prediction explanations and global feature attribution
 - **Model Validation**: Performance benchmarking and consistency checks
 
-## 📊 Output Reports
+## Output Reports
 
 The pipeline generates comprehensive reports in the `reports/` directory:
 
@@ -205,7 +205,7 @@ python cli.py test --coverage  # with coverage report
 - **Technical indicators** dominate → technical analysis approaches supported
 - **Price levels** influential → support/resistance analysis matters
 
-## ⚙️ Configuration
+## Configuration
 
 ### Model Parameters
 - **LightGBM**: Learning rate 0.05, early stopping after 100 rounds
@@ -217,7 +217,7 @@ python cli.py test --coverage  # with coverage report
 - **Position Sizing**: Max 5% per position, 15% volatility target
 - **Rebalancing**: Weekly with 12-week holding period
 
-## 📋 Dependencies
+## Dependencies
 
 Core libraries:
 - `pandas`, `numpy` - Data manipulation
@@ -229,7 +229,7 @@ Core libraries:
 - `shap` - Model explainability
 - `pytest` - Testing
 
-## 🛠️ Development
+## Development
 
 ### Code Quality
 ```bash
@@ -249,7 +249,7 @@ make format   # Auto-format code
 3. Add to comparison script `src/models/compare_models.py`
 4. Update explainability analysis if needed
 
-## 📈 Performance Benchmarks
+## Performance Benchmarks
 
 ### Expected Results
 - **RMSE**: < 0.15 (both models achieve ~0.10)
@@ -283,4 +283,4 @@ This project is for educational and research purposes. See individual data sourc
 
 ---
 
-**Built with ❤️ for the stock prediction community**
+**Built with dedication for the stock prediction community**
