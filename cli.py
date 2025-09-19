@@ -77,10 +77,11 @@ class StockTrendsCLI:
         logger.info("=" * 60)
         
         steps = [
-            ("Downloading data", "ingestion/download_data.py"),
-            ("Preprocessing data", "preprocess/preprocess_data.py"),
-            ("Engineering features", "features/feature_engineer.py"),
-            ("Creating splits", "preprocess/create_splits.py")
+            ("Downloading equity prices", "ingestion/equity_prices.py"),
+            ("Downloading macro data", "ingestion/macro_data.py"),
+            ("Downloading news data", "ingestion/news_data.py"),
+            ("Weekly aggregation", "preprocess/weekly_aggregator.py"),
+            ("Engineering features", "features/feature_engineering.py")
         ]
         
         for step_name, script in steps:

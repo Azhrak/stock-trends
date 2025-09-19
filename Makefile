@@ -54,19 +54,21 @@ clean: ## Clean temporary files and cache
 data: ## Download and preprocess data
 	@echo "$(YELLOW)Downloading and preprocessing data...$(RESET)"
 	mkdir -p $(DATA_DIR)/raw $(DATA_DIR)/processed
-	$(PYTHON) $(SRC_DIR)/ingestion/download_data.py
-	$(PYTHON) $(SRC_DIR)/preprocess/preprocess_data.py
+	$(PYTHON) $(SRC_DIR)/ingestion/equity_prices.py
+	$(PYTHON) $(SRC_DIR)/ingestion/macro_data.py
+	$(PYTHON) $(SRC_DIR)/ingestion/news_data.py
+	$(PYTHON) $(SRC_DIR)/preprocess/weekly_aggregator.py
 	@echo "$(GREEN)Data processing complete!$(RESET)"
 
 features: ## Generate features for modeling
 	@echo "$(YELLOW)Generating features...$(RESET)"
-	$(PYTHON) $(SRC_DIR)/features/feature_engineer.py
+	$(PYTHON) $(SRC_DIR)/features/feature_engineering.py
 	@echo "$(GREEN)Feature engineering complete!$(RESET)"
 
 splits: ## Create train/validation/test splits
 	@echo "$(YELLOW)Creating data splits...$(RESET)"
-	$(PYTHON) $(SRC_DIR)/preprocess/create_splits.py
-	@echo "$(GREEN)Data splits created!$(RESET)"
+	@echo "Note: Data splits are integrated into feature engineering process"
+	@echo "$(GREEN)Data splits process integrated!$(RESET)"
 
 models: ## Train baseline models (LightGBM and Transformer)
 	@echo "$(YELLOW)Training baseline models...$(RESET)"

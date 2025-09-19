@@ -1,6 +1,8 @@
 """
-Baseline model training script.
-Trains both LightGBM and Temporal Transformer models on all splits.
+Multi-model training utilities for baseline comparisons and research.
+
+This module provides functionality to train multiple models in a single session
+for comparison purposes, extracted from train_baselines.py.
 """
 
 import sys
@@ -27,7 +29,7 @@ def train_baseline_models(
     models_to_train: List[str] = ['lightgbm', 'transformer']
 ) -> Dict[str, Any]:
     """
-    Train baseline models on multiple splits.
+    Train baseline models on multiple splits for comparison.
     
     Args:
         max_splits: Maximum number of splits to train on
@@ -49,14 +51,16 @@ def train_baseline_models(
         logger.info("=" * 60)
         
         lgb_model = LightGBMModel()
-        lgb_results = lgb_model.train_all_splits(max_splits=max_splits, save_results=save_results)
+        lgb_results = lgb_model.train_all_splits(
+            max_splits=max_splits, 
+            save_results=save_results
+        )
         
-        if lgb_results:
-            lgb_summary = lgb_model.calculate_summary_metrics(lgb_results)
+        if lgb_results and 'detailed_results' in lgb_results:
             results['lightgbm'] = {
-                'detailed_results': lgb_results,
-                'summary': lgb_summary,
-                'model_instance': lgb_model
+                'model_instance': lgb_model,
+                'detailed_results': lgb_results['detailed_results'],
+                'summary': lgb_results['summary']
             }
             
             # Show feature importance
@@ -80,20 +84,25 @@ def train_baseline_models(
             save_results=save_results
         )
         
-        if transformer_results:
-            transformer_summary = transformer_model.calculate_summary_metrics(transformer_results)
+        if transformer_results and 'detailed_results' in transformer_results:
             results['transformer'] = {
-                'detailed_results': transformer_results,
-                'summary': transformer_summary,
-                'model_instance': transformer_model
+                'model_instance': transformer_model,
+                'detailed_results': transformer_results['detailed_results'],
+                'summary': transformer_results['summary']
             }
+            
+            # Summary for transformer
+            summary = transformer_results['summary']
+            logger.info(f"\\nTransformer Training Summary:")
+            logger.info(f"Mean Test RMSE: {summary.get('mean_test_rmse', 'N/A'):.4f}")
+            logger.info(f"Mean Test Dir Accuracy: {summary.get('mean_test_dir_accuracy', 'N/A'):.3f}")
         else:
             logger.error("No Transformer results obtained")
     
-    # Compare models
+    # Compare models if multiple were trained
     if len(results) > 1:
-        logger.info("=" * 60)
-        logger.info("MODEL COMPARISON")
+        logger.info("\\n" + "=" * 60)
+        logger.info("COMPARING MODEL PERFORMANCE")
         logger.info("=" * 60)
         
         comparison = compare_models(results)
@@ -103,7 +112,7 @@ def train_baseline_models(
 
 def compare_models(results: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Compare performance of different models.
+    Compare performance of different models with ranking.
     
     Args:
         results: Dictionary with results for each model
@@ -135,9 +144,9 @@ def compare_models(results: Dict[str, Any]) -> Dict[str, Any]:
         
         comparison[metric] = metric_comparison
     
-    # Log comparison
+    # Log comparison with ranking
     for metric, model_results in comparison.items():
-        logger.info(f"\\n{metric.upper()}:")
+        logger.info(f"\\n{metric.upper()} RANKING:")
         logger.info("-" * 40)
         
         # Sort by mean performance
@@ -183,9 +192,39 @@ def save_combined_results(results: Dict[str, Any], output_dir: str = "models"):
     
     logger.info(f"Saved combined results to: {combined_file}")
 
+def quick_baseline_comparison(
+    models_to_train: List[str] = ['lightgbm', 'transformer'],
+    max_splits: int = 2
+) -> Dict[str, Any]:
+    """
+    Quick baseline comparison for research purposes.
+    
+    Args:
+        models_to_train: List of models to compare
+        max_splits: Number of splits to train on (keep low for speed)
+        
+    Returns:
+        Dictionary with comparison results
+    """
+    logger.info("=" * 60)
+    logger.info("QUICK BASELINE COMPARISON")
+    logger.info("=" * 60)
+    
+    # Train models
+    results = train_baseline_models(
+        max_splits=max_splits,
+        save_results=False,  # Don't save for quick comparisons
+        models_to_train=models_to_train
+    )
+    
+    # Save combined results
+    save_combined_results(results)
+    
+    return results
+
 def main():
-    """Main training function."""
-    logger.info("Starting baseline model training")
+    """Main training function for standalone use."""
+    logger.info("Starting multi-model baseline training")
     
     # Configuration
     MAX_SPLITS = 3  # Train on first 3 splits for speed
@@ -204,7 +243,7 @@ def main():
         
         # Print final summary
         logger.info("=" * 60)
-        logger.info("TRAINING COMPLETED SUCCESSFULLY")
+        logger.info("MULTI-MODEL TRAINING COMPLETED")
         logger.info("=" * 60)
         
         for model_name in MODELS_TO_TRAIN:
@@ -215,7 +254,7 @@ def main():
                 logger.info(f"  Mean Test Dir Accuracy: {summary.get('mean_test_dir_accuracy', 'N/A'):.3f}")
         
     except Exception as e:
-        logger.error(f"Training failed: {str(e)}")
+        logger.error(f"Multi-model training failed: {str(e)}")
         raise
 
 if __name__ == "__main__":

@@ -73,49 +73,93 @@ def compare_model_performance(results: dict):
     logger.info("MODEL PERFORMANCE COMPARISON")
     logger.info("=" * 70)
     
-    if 'lightgbm' not in results or 'transformer' not in results:
-        logger.error("Both model results are required for comparison")
+    # Extract all available models
+    available_models = [model for model in results.keys() if model != 'comparison']
+    
+    if len(available_models) < 2:
+        logger.warning(f"Only {len(available_models)} model(s) found. Need at least 2 for comparison.")
+        if available_models:
+            model_name = available_models[0]
+            summary = results[model_name].get('summary', {})
+            logger.info(f"\nSingle model results ({model_name.upper()}):")
+            logger.info(f"  Test RMSE: {summary.get('mean_test_rmse', 'N/A')}")
+            logger.info(f"  Test Dir Accuracy: {summary.get('mean_test_dir_accuracy', 'N/A')}")
         return
     
-    # Extract summaries
-    lgb_summary = results['lightgbm'].get('summary', {})
-    transformer_summary = results['transformer'].get('summary', {})
-    
-    # Define metrics to compare
-    metrics = [
+    # Define metrics to compare with ranking
+    metrics_config = [
         ('test_rmse', 'Test RMSE', 'lower'),
         ('test_dir_accuracy', 'Test Direction Accuracy', 'higher'),
         ('val_rmse', 'Validation RMSE', 'lower'),
         ('val_dir_accuracy', 'Val Direction Accuracy', 'higher'),
     ]
     
-    # Create comparison table
-    logger.info(f"{'Metric':<25} {'LightGBM':<15} {'Transformer':<15} {'Winner':<12}")
-    logger.info("-" * 70)
-    
-    for metric, display_name, direction in metrics:
-        lgb_mean = lgb_summary.get(f'mean_{metric}', 0)
-        lgb_std = lgb_summary.get(f'std_{metric}', 0)
+    # Show detailed ranking for each metric
+    for metric, display_name, direction in metrics_config:
+        logger.info(f"\n{display_name.upper()} RANKING:")
+        logger.info("-" * 50)
         
-        transformer_mean = transformer_summary.get(f'mean_{metric}', 0)
-        transformer_std = transformer_summary.get(f'std_{metric}', 0)
+        # Collect metric values for all models
+        model_metrics = {}
+        for model_name in available_models:
+            summary = results[model_name].get('summary', {})
+            mean_value = summary.get(f'mean_{metric}', None)
+            std_value = summary.get(f'std_{metric}', 0)
+            
+            if mean_value is not None:
+                model_metrics[model_name] = {
+                    'mean': mean_value,
+                    'std': std_value
+                }
         
-        if lgb_mean == 0 and transformer_mean == 0:
+        if not model_metrics:
+            logger.info(f"  No data available for {metric}")
             continue
         
-        # Determine winner
+        # Sort models by performance
         if direction == 'lower':
-            winner = "LightGBM" if lgb_mean < transformer_mean else "Transformer"
-            improvement = abs(lgb_mean - transformer_mean) / max(lgb_mean, transformer_mean) * 100
+            # Lower is better (RMSE)
+            sorted_models = sorted(model_metrics.items(), key=lambda x: x[1]['mean'])
         else:
-            winner = "LightGBM" if lgb_mean > transformer_mean else "Transformer"
-            improvement = abs(lgb_mean - transformer_mean) / max(lgb_mean, transformer_mean) * 100
+            # Higher is better (accuracy)
+            sorted_models = sorted(model_metrics.items(), key=lambda x: x[1]['mean'], reverse=True)
         
-        lgb_str = f"{lgb_mean:.4f}±{lgb_std:.4f}"
-        transformer_str = f"{transformer_mean:.4f}±{transformer_std:.4f}"
-        winner_str = f"{winner} ({improvement:.1f}%)"
+        # Display ranked results
+        for rank, (model_name, stats) in enumerate(sorted_models, 1):
+            logger.info(f"{rank}. {model_name.upper():<15} {stats['mean']:>8.4f} ± {stats['std']:>6.4f}")
+    
+    # Create summary comparison table for 2 models (backward compatibility)
+    if len(available_models) == 2:
+        model1, model2 = available_models
+        summary1 = results[model1].get('summary', {})
+        summary2 = results[model2].get('summary', {})
         
-        logger.info(f"{display_name:<25} {lgb_str:<15} {transformer_str:<15} {winner_str:<12}")
+        logger.info(f"\nSUMMARY COMPARISON:")
+        logger.info(f"{'Metric':<25} {model1.upper():<15} {model2.upper():<15} {'Winner':<12}")
+        logger.info("-" * 70)
+        
+        for metric, display_name, direction in metrics_config:
+            mean1 = summary1.get(f'mean_{metric}', 0)
+            std1 = summary1.get(f'std_{metric}', 0)
+            mean2 = summary2.get(f'mean_{metric}', 0)
+            std2 = summary2.get(f'std_{metric}', 0)
+            
+            if mean1 == 0 and mean2 == 0:
+                continue
+            
+            # Determine winner
+            if direction == 'lower':
+                winner = model1 if mean1 < mean2 else model2
+                improvement = abs(mean1 - mean2) / max(mean1, mean2) * 100
+            else:
+                winner = model1 if mean1 > mean2 else model2
+                improvement = abs(mean1 - mean2) / max(mean1, mean2) * 100
+            
+            str1 = f"{mean1:.4f}±{std1:.4f}"
+            str2 = f"{mean2:.4f}±{std2:.4f}"
+            winner_str = f"{winner.upper()} ({improvement:.1f}%)"
+            
+            logger.info(f"{display_name:<25} {str1:<15} {str2:<15} {winner_str:<12}")
     
     # Model characteristics comparison
     logger.info("\\n" + "=" * 70)
