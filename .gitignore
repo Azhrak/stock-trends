@@ -245,3 +245,6 @@ mlruns/
 .env.*.local
 secrets.json
 api_keys.json
+
+# But keep example files
+!.env.example

@@ -75,6 +75,7 @@ dependencies = [
     "python-dateutil>=2.8.0",
     "PyYAML>=6.0.0",
     "click>=8.1.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]

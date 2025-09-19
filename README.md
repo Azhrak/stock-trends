@@ -42,6 +42,31 @@ make setup
 make all
 ```
 
+### Environment Variables (Optional)
+
+The project works without API keys but with limited functionality. For full features, configure these APIs:
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env with your API keys (get them for free):
+# - FRED_API_KEY: https://fred.stlouisfed.org/docs/api/api_key.html
+# - FINNHUB_API_KEY: https://finnhub.io/register
+```
+
+**Required Environment Variables:**
+- `FRED_API_KEY` - Federal Reserve Economic Data API (macroeconomic indicators)
+- `FINNHUB_API_KEY` - Finnhub Stock API (financial news data)
+
+**What happens without API keys:**
+- ✅ **Still works**: Stock price data (yfinance), technical analysis, model training, backtesting
+- ⚠️ **Limited**: No macroeconomic data (GDP, inflation) or financial news sentiment
+
+**Rate Limits (Free Tiers):**
+- FRED API: 120 requests/minute
+- Finnhub API: 60 requests/minute
+
 ### Alternative CLI Usage
 ```bash
 # Using the CLI directly

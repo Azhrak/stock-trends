@@ -16,6 +16,13 @@ import time
 # Add src to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
+# Load environment variables from .env file if available
+try:
+    from utils.env_utils import load_environment
+    load_environment()
+except ImportError:
+    pass  # Continue without dotenv if not available
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -252,6 +259,13 @@ class StockTrendsCLI:
             except Exception as e:
                 logger.error(f"✗ {module} - {e}")
                 return 1
+        
+        # Check API keys status
+        try:
+            from utils.env_utils import print_api_status
+            print_api_status()
+        except ImportError:
+            logger.warning("Could not check API keys status")
         
         logger.info("Project setup validation passed!")
         return 0
