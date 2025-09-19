@@ -10,11 +10,10 @@ SRC_DIR := src
 DATA_DIR := data
 MODELS_DIR := models
 REPORTS_DIR := reports
-VENV := .venv
 
-# Python interpreter
-PYTHON := $(VENV)/bin/python
-PIP := $(VENV)/bin/pip
+# UV and Python interpreter
+PYTHON := uv run python
+UV := uv
 
 # Default target
 .DEFAULT_GOAL := help
@@ -36,10 +35,14 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(RESET) %s\n", $$1, $$2}'
 
 setup: ## Setup project environment and dependencies
-	@echo "$(YELLOW)Setting up project environment...$(RESET)"
-	python3 -m venv $(VENV)
-	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements.txt
+	@echo "$(YELLOW)Setting up project environment with uv...$(RESET)"
+	@if ! command -v uv &> /dev/null; then \
+		echo "$(RED)Error: uv is not installed. Please install it first:$(RESET)"; \
+		echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"; \
+		echo "  or: brew install uv"; \
+		exit 1; \
+	fi
+	$(UV) sync
 	@echo "$(GREEN)Environment setup complete!$(RESET)"
 
 clean: ## Clean temporary files and cache

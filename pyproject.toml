@@ -96,7 +96,8 @@ dev = [
 ]
 
 gpu = [
-    "torch[cuda]>=2.0.0",
+    # Note: CUDA support is automatically included in modern torch installations
+    "torch>=2.0.0",
     "torchvision>=0.15.0",
     "torchaudio>=2.0.0",
 ]

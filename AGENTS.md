@@ -39,7 +39,9 @@ project-root/
 
 ## Dependency Management
 
-### pyproject.toml Configuration
+### Modern Package Management with uv
+This project uses [uv](https://docs.astral.sh/uv/) for fast, reliable package management:
+
 ```toml
 [project]
 dependencies = [
@@ -58,15 +60,24 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7.4.0", "black>=23.0.0", "flake8>=6.0.0"]
-gpu = ["torch[cuda]>=2.0.0"]
+gpu = ["torch>=2.0.0"]  # Note: CUDA support is automatic in modern torch
 all = ["project-name[dev,gpu]"]
 ```
 
-**Best Practices:**
+**Best Practices with uv:**
 - Use version constraints (>=X.Y.Z) for stability
 - Group dependencies by purpose with comments
 - Optional dependency groups for different use cases
-- Include development tools configuration
+- Let uv handle virtual environments automatically
+- Leverage uv's speed (10-100x faster than pip)
+- Use `uv.lock` for reproducible builds
+
+**Why uv over pip/conda:**
+- **Speed**: 10-100x faster package resolution and installation
+- **Reliability**: Better dependency resolution with conflict detection
+- **Simplicity**: No need to manage virtual environments manually
+- **Reproducibility**: Lock files ensure consistent environments
+- **Modern**: Built in Rust, designed for Python packaging best practices
 
 ## CLI & Automation Design
 
@@ -88,12 +99,24 @@ class ProjectCLI:
 ```
 
 ```makefile
-# Makefile targets
-setup:              # Environment setup
-data:               # Data pipeline
+# Makefile targets using uv
+setup:              # Environment setup with uv sync
+data:               # Data pipeline 
 models:             # Model training
-test:               # Run tests
+test:               # Run tests with uv
 all:                # Complete pipeline
+```
+
+```python
+# CLI using uv for execution
+def run_python_script(self, script_path: str, args: Optional[List[str]] = None) -> int:
+    """Run a Python script with uv."""
+    cmd = ["uv", "run", "python", str(script_path)]
+    if args:
+        cmd.extend(args)
+    
+    result = subprocess.run(cmd, cwd=self.project_root)
+    return result.returncode
 ```
 
 **Key Features:**
@@ -475,11 +498,13 @@ if not api_key:
    - Always start with project structure
    - Separate data/models/code clearly
    - Use modern Python packaging (pyproject.toml)
+   - Choose uv for fast, reliable dependency management
 
 2. **Environment Management**
    - Create .env.example for API keys
    - Implement graceful degradation
    - Add validation commands
+   - Use uv for automatic virtual environment handling
 
 3. **Data Pipeline Design**
    - Modular, class-based components

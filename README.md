@@ -28,16 +28,21 @@ This project implements a complete end-to-end system for predicting 12-week forw
 
 ### Prerequisites
 - Python 3.10+
+- **uv** (fast Python package manager) - [Install uv](https://docs.astral.sh/uv/)
 - macOS, Linux, or Windows
 - Internet connection for data download
 
 ### Setup and Run
 ```bash
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# or: brew install uv
+
 # Clone and setup
 git clone <repository-url>
 cd stock-trends
 
-# Setup environment and run complete pipeline
+# Setup environment and run complete pipeline (using uv)
 make setup
 make all
 ```
@@ -69,11 +74,15 @@ cp .env.example .env
 
 ### Alternative CLI Usage
 ```bash
-# Using the CLI directly
+# Using the CLI directly (uv automatically manages the environment)
 python cli.py validate    # Validate setup
 python cli.py all          # Run complete pipeline
 python cli.py models       # Train models only
 python cli.py explain      # Generate explainability reports
+
+# Or run with uv explicitly
+uv run python cli.py validate
+uv run python cli.py all
 ```
 
 ## Project Structure
@@ -219,7 +228,9 @@ python cli.py test --coverage  # with coverage report
 
 ## Dependencies
 
-Core libraries:
+**Package Manager**: [uv](https://docs.astral.sh/uv/) (fast, reliable Python package manager)
+
+Core libraries managed by uv:
 - `pandas`, `numpy` - Data manipulation
 - `lightgbm` - Gradient boosting
 - `torch`, `transformers` - Neural networks  
@@ -228,6 +239,8 @@ Core libraries:
 - `matplotlib`, `seaborn` - Visualization
 - `shap` - Model explainability
 - `pytest` - Testing
+
+All dependencies are defined in `pyproject.toml` and locked in `uv.lock` for reproducible builds.
 
 ## Development
 

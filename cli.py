@@ -37,16 +37,21 @@ class StockTrendsCLI:
         """Initialize CLI."""
         self.project_root = Path(__file__).parent
         self.src_dir = self.project_root / "src"
-        self.venv_python = self.project_root / ".venv" / "bin" / "python"
         
-        # Check if virtual environment exists
-        if not self.venv_python.exists():
-            logger.error("Virtual environment not found. Please run 'make setup' first.")
+        # Check if uv is available
+        try:
+            result = subprocess.run(['uv', '--version'], capture_output=True, text=True)
+            if result.returncode != 0:
+                raise FileNotFoundError()
+        except (FileNotFoundError, subprocess.SubprocessError):
+            logger.error("uv is not installed. Please install it first:")
+            logger.error("  curl -LsSf https://astral.sh/uv/install.sh | sh")
+            logger.error("  or: brew install uv")
             sys.exit(1)
     
     def run_python_script(self, script_path: str, args: Optional[List[str]] = None) -> int:
         """
-        Run a Python script with the virtual environment.
+        Run a Python script with uv.
         
         Args:
             script_path: Path to Python script relative to src/
@@ -61,7 +66,7 @@ class StockTrendsCLI:
             logger.error(f"Script not found: {full_script_path}")
             return 1
         
-        cmd = [str(self.venv_python), str(full_script_path)]
+        cmd = ["uv", "run", "python", str(full_script_path)]
         if args:
             cmd.extend(args)
         
@@ -209,8 +214,8 @@ class StockTrendsCLI:
         """Run unit tests."""
         logger.info("Running unit tests...")
         
-        # Run pytest with the virtual environment
-        cmd = [str(self.venv_python), "-m", "pytest", "tests/", "-v"]
+        # Run pytest with uv
+        cmd = ["uv", "run", "pytest", "tests/", "-v"]
         
         if args.coverage:
             cmd.extend(["--cov=src", "--cov-report=html"])
@@ -226,9 +231,15 @@ class StockTrendsCLI:
         """Validate project setup and dependencies."""
         logger.info("Validating project setup...")
         
-        # Check virtual environment
-        if not self.venv_python.exists():
-            logger.error("Virtual environment not found")
+        # Check uv is available and project is synced
+        try:
+            result = subprocess.run(['uv', 'run', 'python', '--version'], 
+                                  capture_output=True, text=True, cwd=self.project_root)
+            if result.returncode != 0:
+                logger.error("uv environment not properly set up")
+                return 1
+        except (FileNotFoundError, subprocess.SubprocessError):
+            logger.error("uv is not available or project not synced")
             return 1
         
         # Check required directories
@@ -248,8 +259,8 @@ class StockTrendsCLI:
         for module in test_imports:
             try:
                 result = subprocess.run(
-                    [str(self.venv_python), "-c", f"import {module}"],
-                    capture_output=True, text=True
+                    ["uv", "run", "python", "-c", f"import {module}"],
+                    capture_output=True, text=True, cwd=self.project_root
                 )
                 if result.returncode == 0:
                     logger.info(f"✓ {module}")
