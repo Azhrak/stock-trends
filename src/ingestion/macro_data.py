@@ -4,11 +4,23 @@ Downloads economic indicators and saves to parquet.
 """
 
 import os
+import sys
 import pandas as pd
 from fredapi import Fred
 from typing import Dict, List, Optional
 from datetime import datetime
 import logging
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+
+# Load environment variables from .env file
+try:
+    from utils.env_utils import load_environment
+    load_environment()
+except ImportError:
+    pass  # Continue without env loading if not available
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -86,12 +98,20 @@ class MacroDataIngestor:
             try:
                 logger.info(f"Downloading {name} ({series_id})")
                 
-                series = self.fred.get_series(
-                    series_id,
-                    start_date=start_date,
-                    end_date=end_date,
-                    frequency=frequency
-                )
+                # Only pass frequency if it's specified
+                if frequency is not None:
+                    series = self.fred.get_series(
+                        series_id,
+                        start_date=start_date,
+                        end_date=end_date,
+                        frequency=frequency
+                    )
+                else:
+                    series = self.fred.get_series(
+                        series_id,
+                        start_date=start_date,
+                        end_date=end_date
+                    )
                 
                 if not series.empty:
                     all_series[name] = series
