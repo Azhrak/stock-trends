@@ -579,6 +579,26 @@ uv run cli.py tickers update --set AAPL MSFT  # Use just 2 stocks for testing
 # Or: make tickers-reset && uv run cli.py tickers update --set AAPL MSFT
 ```
 
+**Problem: Invalid ticker errors or typos in ticker list**
+```bash
+# Solution 1: Validate your ticker list
+uv run cli.py tickers validate      # Shows which tickers are invalid
+
+# Solution 2: Fix automatically suggested
+uv run cli.py tickers update --remove INVALID_TICKER  # Remove problematic ticker
+
+# Solution 3: Start fresh with defaults
+uv run cli.py tickers update --reset-to-defaults
+```
+
+**Problem: Pipeline fails with "YFTzMissingError" or "Quote not found"**
+```bash
+# This happens when tickers are delisted or misspelled
+# Solution: Run validation and clean up invalid tickers
+uv run cli.py tickers validate
+# Then follow the suggested fix commands
+```
+
 **Problem: Model training takes too long**
 ```bash
 # Solution 1: Use CPU-only for faster setup

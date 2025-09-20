@@ -325,6 +325,55 @@ class StockTrendsCLI:
         except Exception as e:
             logger.error(f"Error listing tickers: {e}")
             return 1
+
+    def validate_tickers(self, args):
+        """Validate current ticker list for trading errors."""
+        try:
+            from utils.ticker_manager import TickerManager
+            
+            ticker_manager = TickerManager()
+            tickers = ticker_manager.load_tickers()
+            
+            logger.info("=" * 60)
+            logger.info("TICKER VALIDATION REPORT")
+            logger.info("=" * 60)
+            
+            validation = ticker_manager.validate_tickers(tickers)
+            
+            if validation['valid']:
+                logger.info(f"✓ Valid tickers ({len(validation['valid'])}):")
+                for ticker in validation['valid']:
+                    logger.info(f"  {ticker}")
+            
+            if validation['invalid']:
+                logger.error(f"✗ Invalid tickers ({len(validation['invalid'])}):")
+                for ticker in validation['invalid']:
+                    logger.error(f"  {ticker} - Not found or delisted")
+                logger.error("")
+                logger.error("💡 To fix: uv run cli.py tickers update --remove " + " ".join(validation['invalid']))
+            
+            if validation['warnings']:
+                logger.warning(f"⚠ Warnings ({len(validation['warnings'])}):")
+                for warning in validation['warnings']:
+                    logger.warning(f"  {warning}")
+            
+            # Summary
+            logger.info("")
+            logger.info("=" * 60)
+            if validation['invalid']:
+                logger.error(f"VALIDATION FAILED: {len(validation['invalid'])} invalid ticker(s)")
+                logger.error("Run the suggested fix command above to remove invalid tickers.")
+                return 1
+            elif validation['warnings']:
+                logger.warning(f"VALIDATION WARNING: {len(validation['warnings'])} ticker(s) have issues")
+                return 0
+            else:
+                logger.info("✓ VALIDATION PASSED: All tickers are valid")
+                return 0
+            
+        except Exception as e:
+            logger.error(f"Error validating tickers: {e}")
+            return 1
     
     def show_default_tickers(self, args):
         """Show the default ticker list available in config.py."""
@@ -357,26 +406,62 @@ class StockTrendsCLI:
             logger.error(f"Error showing default tickers: {e}")
             return 1
     
+    def _validate_and_warn(self, ticker_manager, tickers: List[str], force: bool = False) -> bool:
+        """
+        Validate tickers and show warnings. Returns True if should proceed.
+        
+        Args:
+            ticker_manager: TickerManager instance
+            tickers: List of tickers to validate
+            force: If True, proceed even with validation errors
+            
+        Returns:
+            True if validation passed or user wants to force, False otherwise
+        """
+        validation = ticker_manager.validate_tickers(tickers)
+        
+        if validation['invalid']:
+            logger.error(f"⚠ Warning: {len(validation['invalid'])} invalid ticker(s) detected:")
+            for ticker in validation['invalid']:
+                logger.error(f"  {ticker} - Not found or delisted")
+            
+            if force:
+                logger.warning("--force specified, proceeding anyway...")
+                return True
+            else:
+                logger.error("")
+                logger.error("❌ Update cancelled due to invalid tickers.")
+                logger.error("Options:")
+                logger.error("  1. Remove invalid tickers from your list")
+                logger.error("  2. Use --force to proceed anyway (not recommended)")
+                logger.error("  3. Use --no-validate to skip validation completely")
+                return False
+        
+        if validation['warnings']:
+            logger.warning(f"⚠ {len(validation['warnings'])} ticker(s) have warnings:")
+            for warning in validation['warnings']:
+                logger.warning(f"  {warning}")
+            logger.warning("Proceeding anyway...")
+        
+        return True
+
     def update_tickers(self, args):
         """Update the stock ticker configuration."""
         try:
             from utils.ticker_manager import TickerManager
             
             ticker_manager = TickerManager()
+            should_validate = not args.no_validate
             
             if args.set:
                 # Replace entire list
                 new_tickers = [t.strip().upper() for t in args.set]
                 logger.info(f"Setting tickers to: {new_tickers}")
                 
-                # Validate first if requested
-                if args.validate:
-                    validation = ticker_manager.validate_tickers(new_tickers)
-                    if validation['invalid']:
-                        logger.error(f"Invalid tickers found: {validation['invalid']}")
-                        if not args.force:
-                            logger.error("Use --force to proceed anyway")
-                            return 1
+                # Validate unless disabled
+                if should_validate:
+                    if not self._validate_and_warn(ticker_manager, new_tickers, args.force):
+                        return 1
                 
                 ticker_manager.save_tickers(new_tickers)
                 logger.info(f"✓ Updated ticker list with {len(new_tickers)} stocks")
@@ -387,14 +472,10 @@ class StockTrendsCLI:
                     from ingestion.config import DEFAULT_TICKERS
                     logger.info(f"Resetting to {len(DEFAULT_TICKERS)} default tickers from config.py")
                     
-                    # Validate first if requested
-                    if args.validate:
-                        validation = ticker_manager.validate_tickers(DEFAULT_TICKERS)
-                        if validation['invalid']:
-                            logger.error(f"Invalid default tickers found: {validation['invalid']}")
-                            if not args.force:
-                                logger.error("Use --force to proceed anyway")
-                                return 1
+                    # Validate unless disabled
+                    if should_validate:
+                        if not self._validate_and_warn(ticker_manager, DEFAULT_TICKERS, args.force):
+                            return 1
                     
                     ticker_manager.save_tickers(DEFAULT_TICKERS)
                     logger.info(f"✓ Reset to default ticker list with {len(DEFAULT_TICKERS)} stocks")
@@ -408,20 +489,16 @@ class StockTrendsCLI:
                 tickers_to_add = [t.strip().upper() for t in args.add]
                 logger.info(f"Adding tickers: {tickers_to_add}")
                 
-                # Validate first if requested
-                if args.validate:
-                    validation = ticker_manager.validate_tickers(tickers_to_add)
-                    if validation['invalid']:
-                        logger.error(f"Invalid tickers found: {validation['invalid']}")
-                        if not args.force:
-                            logger.error("Use --force to proceed anyway")
-                            return 1
+                # Validate unless disabled
+                if should_validate:
+                    if not self._validate_and_warn(ticker_manager, tickers_to_add, args.force):
+                        return 1
                 
                 updated_tickers = ticker_manager.add_tickers(tickers_to_add)
                 logger.info(f"✓ Added {len(tickers_to_add)} tickers. Total: {len(updated_tickers)}")
                 
             elif args.remove:
-                # Remove from existing list
+                # Remove from existing list (no validation needed for removal)
                 tickers_to_remove = [t.strip().upper() for t in args.remove]
                 logger.info(f"Removing tickers: {tickers_to_remove}")
                 
@@ -508,6 +585,10 @@ Examples:
     defaults_parser = tickers_subparsers.add_parser('defaults', help='Show default ticker list from config.py')
     defaults_parser.set_defaults(func=StockTrendsCLI().show_default_tickers)
     
+    # Validate tickers
+    validate_parser = tickers_subparsers.add_parser('validate', help='Validate current ticker list')
+    validate_parser.set_defaults(func=StockTrendsCLI().validate_tickers)
+    
     # Update tickers
     update_parser = tickers_subparsers.add_parser('update', help='Update stock ticker list')
     update_group = update_parser.add_mutually_exclusive_group(required=True)
@@ -519,8 +600,8 @@ Examples:
                             help='Remove tickers from current list (e.g., --remove TSLA)')
     update_group.add_argument('--reset-to-defaults', action='store_true',
                             help='Reset to default tickers from config.py')
-    update_parser.add_argument('--validate', action='store_true',
-                             help='Validate tickers before updating')
+    update_parser.add_argument('--no-validate', action='store_true',
+                             help='Skip ticker validation (not recommended)')
     update_parser.add_argument('--force', action='store_true',
                              help='Force update even if validation fails')
     update_parser.set_defaults(func=StockTrendsCLI().update_tickers)
