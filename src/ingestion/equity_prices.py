@@ -165,8 +165,20 @@ def main():
     # Initialize ingestor
     ingestor = EquityPriceIngestor()
     
-    # Get some tickers (limiting to 50 for initial testing)
-    tickers = ingestor.get_sp500_tickers(limit=50)
+    # Load tickers from configuration
+    try:
+        from utils.ticker_manager import TickerManager
+        ticker_manager = TickerManager()
+        tickers = ticker_manager.load_tickers()
+        logger.info(f"Loaded {len(tickers)} tickers from configuration: {tickers}")
+    except ImportError:
+        logger.warning("TickerManager not available, using fallback from config.py")
+        from .config import DEFAULT_TICKERS
+        tickers = DEFAULT_TICKERS
+    except Exception as e:
+        logger.warning(f"Error loading ticker configuration: {e}, using fallback from config.py")
+        from .config import DEFAULT_TICKERS
+        tickers = DEFAULT_TICKERS
     
     # Download price data
     price_data = ingestor.download_prices(

@@ -74,15 +74,19 @@ cp .env.example .env
 
 ### Alternative CLI Usage
 ```bash
-# Using the CLI directly (uv automatically manages the environment)
-python cli.py validate    # Validate setup
-python cli.py all          # Run complete pipeline
-python cli.py models       # Train models only
-python cli.py explain      # Generate explainability reports
+# Direct CLI commands (recommended - ensures correct environment)
+uv run cli.py validate    # Validate setup
+uv run cli.py all          # Run complete pipeline
+uv run cli.py models       # Train models only
+uv run cli.py explain      # Generate explainability reports
 
-# Or run with uv explicitly
-uv run python cli.py validate
-uv run python cli.py all
+# Make commands - two approaches:
+make all                  # Traditional: individual scripts with Make orchestration  
+make cli-all              # Modern: unified CLI with integrated error handling
+
+# Other Make commands
+make validate             # Same as: uv run cli.py validate
+make cli-validate         # Same as: uv run cli.py validate (unified interface)
 ```
 
 ## How to Use This Tool
@@ -107,9 +111,10 @@ CUSTOM_TICKERS = ["SPY", "QQQ", "AAPL", "MSFT", "AMD", "INTC"]  # ETFs and indiv
 ```
 
 **To analyze your own stocks:**
-1. Edit `src/ingestion/equity_prices.py` 
-2. Replace `DEFAULT_TICKERS` with your stock list
-3. Run the pipeline: `make all`
+1. **CLI commands**: `uv run cli.py tickers update --set YOUR STOCKS HERE`
+2. **Make commands**: `make tickers-list` (view current), `make tickers-reset` (use defaults)
+3. **Manual editing**: Edit `config/tickers.txt` directly 
+4. **Run pipeline**: `make all` or `make cli-all`
 
 ### Expected Outcomes: What You Get
 
@@ -137,9 +142,18 @@ CUSTOM_TICKERS = ["SPY", "QQQ", "AAPL", "MSFT", "AMD", "INTC"]  # ETFs and indiv
 
 #### Step 1: Complete Pipeline (Recommended First Run)
 ```bash
+# Option A: Traditional Make approach (fine-grained control)
 make all
-# This runs: data download → feature engineering → model training → backtesting → analysis
-# Takes: 15-30 minutes depending on number of stocks and internet speed
+# Runs individual scripts: setup → data → features → models → backtest → explainability
+# Good for: debugging specific steps, development workflow
+
+# Option B: Unified CLI approach (integrated error handling)  
+make cli-all
+# Runs unified pipeline: uv run cli.py all
+# Good for: production runs, consistent logging, progress tracking
+
+# Both take: 15-30 minutes depending on number of stocks and internet speed
+# Both produce identical results - choose based on your workflow preference
 ```
 
 #### Step 2: Analyze Results
@@ -181,9 +195,18 @@ for stock, pred in predictions.items():
 
 **A. Analyze Different Stocks**
 ```bash
-# Edit src/ingestion/equity_prices.py
-# Change DEFAULT_TICKERS = ["YOUR", "STOCKS", "HERE"]
-make data features models  # Re-run pipeline with new stocks
+# Method 1: Use CLI ticker management
+uv run cli.py tickers update --set YOUR STOCKS HERE
+
+# Method 2: Use Make ticker commands
+make tickers-list         # View current stocks
+make tickers-defaults     # See all 40 S&P 500 options
+make tickers-reset        # Reset to all defaults
+# Or: uv run cli.py tickers update --add NVDA AMD INTC
+
+# Then re-run pipeline with new stocks
+make data features models  # Traditional approach
+# Or: make cli-all         # Unified approach (full pipeline)
 ```
 
 **B. Adjust Prediction Horizon**
@@ -288,13 +311,15 @@ stock-trends/
 ├── tests/                # Unit tests
 ├── Makefile             # Build automation
 ├── cli.py               # Command-line interface
-└── requirements.txt     # Python dependencies
+├── pyproject.toml       # Python dependencies and project config
+└── uv.lock             # Locked dependency versions
 ```
 
 ## Available Commands
 
 ### Make Commands
 ```bash
+# Traditional pipeline (individual scripts)
 make setup              # Setup virtual environment
 make data               # Download and preprocess data
 make features           # Generate features
@@ -303,16 +328,42 @@ make backtest           # Run backtesting analysis
 make explainability     # Generate explainability reports
 make test               # Run unit tests
 make all                # Run complete pipeline
+
+# CLI-based alternatives (unified interface)
+make cli-data           # Run data pipeline via CLI
+make cli-models         # Train models via CLI
+make cli-backtest       # Run backtesting via CLI
+make cli-explain        # Generate explainability via CLI
+make cli-test           # Run tests via CLI
+make cli-validate       # Validate setup via CLI
+make cli-all            # Run complete pipeline via CLI
+
+# Ticker management
+make tickers-list       # List current stock tickers
+make tickers-defaults   # Show default ticker options (40 S&P 500 stocks)
+make tickers-reset      # Reset to default tickers
+
+# Utilities
+make check-env          # Check if uv environment is ready
+make clean              # Clean temporary files and cache
+make format             # Format code with black
+make lint               # Run code quality checks
 ```
 
 ### CLI Commands
 ```bash
-python cli.py data      # Data pipeline
-python cli.py models    # Model training
-python cli.py backtest  # Backtesting
-python cli.py explain   # Explainability
-python cli.py test      # Unit tests
-python cli.py validate  # Validate setup
+uv run cli.py data      # Data pipeline
+uv run cli.py models    # Model training
+uv run cli.py backtest  # Backtesting
+uv run cli.py explain   # Explainability
+uv run cli.py test      # Unit tests
+uv run cli.py validate  # Validate setup
+
+# Ticker management
+uv run cli.py tickers list                    # View current stocks
+uv run cli.py tickers defaults               # View available defaults
+uv run cli.py tickers update --add NVDA AMD  # Add stocks
+uv run cli.py tickers update --reset-to-defaults  # Reset to 40 S&P stocks
 ```
 
 ## Pipeline Components
@@ -377,7 +428,7 @@ Run tests with:
 ```bash
 make test
 # or
-python cli.py test --coverage  # with coverage report
+uv run cli.py test --coverage  # with coverage report
 ```
 
 ## Model Interpretability
@@ -424,6 +475,11 @@ Core libraries managed by uv:
 
 All dependencies are defined in `pyproject.toml` and locked in `uv.lock` for reproducible builds.
 
+**Why no requirements.txt?** Modern Python projects use `pyproject.toml` + `uv.lock` instead:
+- `pyproject.toml` - Human-readable dependency specification  
+- `uv.lock` - Exact versions for reproducible builds (auto-generated)
+- Much faster and more reliable than the old pip + requirements.txt approach
+
 ## Development
 
 ### Code Quality
@@ -436,7 +492,7 @@ make format   # Auto-format code
 1. Add feature engineering logic to `src/features/feature_engineering.py`
 2. Update feature lists in model training scripts
 3. Add unit tests in `tests/`
-4. Run validation: `python cli.py test`
+4. Run validation: `uv run cli.py test`
 
 ### Adding New Models
 1. Create model class in `src/models/`
@@ -498,7 +554,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 make clean && make data
 
 # Solution 2: Reduce stock list for testing
-# Edit src/ingestion/equity_prices.py, use fewer tickers like ["AAPL", "MSFT"]
+make tickers-list                    # See current stocks
+uv run cli.py tickers update --set AAPL MSFT  # Use just 2 stocks for testing
+# Or: make tickers-reset && uv run cli.py tickers update --set AAPL MSFT
 ```
 
 **Problem: Model training takes too long**
@@ -508,13 +566,12 @@ make clean && make data
 
 # Solution 2: Train only one model type
 make setup
-uv run python src/models/train_lightgbm.py  # Fast gradient boosting only
+uv run src/models/train_lightgbm.py  # Fast gradient boosting only
 ```
 
 **Problem: "Permission denied" or file access errors**
 ```bash
 # Solution: Check file permissions and available disk space
-chmod +x cli.py
 df -h  # Check disk space
 ```
 
@@ -523,7 +580,7 @@ df -h  # Check disk space
 # Solution: Re-sync environment
 make clean
 make setup
-python cli.py validate  # Should show all green checkmarks
+uv run cli.py validate  # Should show all green checkmarks
 ```
 
 **Problem: API rate limits (with API keys configured)**
@@ -545,7 +602,7 @@ python cli.py validate  # Should show all green checkmarks
 
 ### Getting Help
 
-1. **Validate setup**: `python cli.py validate` should pass all checks
+1. **Validate setup**: `uv run cli.py validate` should pass all checks
 2. **Check logs**: Error messages usually indicate the specific issue
 3. **Start simple**: Try with just 2-3 stocks first
 4. **Review documentation**: Each module has detailed docstrings

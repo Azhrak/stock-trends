@@ -23,7 +23,7 @@ project-root/
 ├── reports/              # Analysis outputs (gitignored)
 ├── tests/                # Unit tests
 ├── pyproject.toml        # Modern Python packaging
-├── requirements.txt      # Dependency listing
+├── uv.lock              # Locked dependencies  
 ├── Makefile             # Build automation
 ├── cli.py               # Command-line interface
 ├── .env.example         # Environment variable template

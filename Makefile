@@ -11,9 +11,10 @@ DATA_DIR := data
 MODELS_DIR := models
 REPORTS_DIR := reports
 
-# UV and Python interpreter
+# UV and Python interpreter  
 PYTHON := uv run python
 UV := uv
+CLI := uv run cli.py
 
 # Default target
 .DEFAULT_GOAL := help
@@ -25,7 +26,9 @@ YELLOW := \033[33m
 BLUE := \033[34m
 RESET := \033[0m
 
-.PHONY: help setup clean data features models backtest explainability all test lint
+.PHONY: help setup clean data features models backtest explainability all test lint \
+        cli-data cli-models cli-backtest cli-explain cli-test cli-validate cli-all \
+        tickers-list tickers-defaults tickers-reset pipeline-data pipeline-models pipeline-analysis
 
 help: ## Show this help message
 	@echo "$(BLUE)Stock Trends Prediction Project$(RESET)"
@@ -136,22 +139,61 @@ all: pipeline-analysis ## Run complete end-to-end pipeline
 	@echo "- $(REPORTS_DIR)/ - Analysis reports and visualizations"
 	@echo "- $(DATA_DIR)/ - Processed data and splits"
 
+# CLI-based alternatives (using unified CLI interface)
+cli-data: ## Run data pipeline via CLI
+	@echo "$(YELLOW)Running data pipeline via CLI...$(RESET)"
+	$(CLI) data
+
+cli-models: ## Train models via CLI  
+	@echo "$(YELLOW)Training models via CLI...$(RESET)"
+	$(CLI) models
+
+cli-backtest: ## Run backtesting via CLI
+	@echo "$(YELLOW)Running backtesting via CLI...$(RESET)"
+	$(CLI) backtest
+
+cli-explain: ## Generate explainability reports via CLI
+	@echo "$(YELLOW)Generating explainability via CLI...$(RESET)"
+	$(CLI) explain
+
+cli-test: ## Run tests via CLI
+	@echo "$(YELLOW)Running tests via CLI...$(RESET)"
+	$(CLI) test
+
+cli-validate: ## Validate setup via CLI
+	@echo "$(YELLOW)Validating setup via CLI...$(RESET)"
+	$(CLI) validate
+
+cli-all: ## Run complete pipeline via CLI
+	@echo "$(YELLOW)Running complete pipeline via CLI...$(RESET)"
+	$(CLI) all
+
+# Ticker management
+tickers-list: ## List current stock tickers
+	@echo "$(YELLOW)Listing current tickers...$(RESET)"
+	$(CLI) tickers list
+
+tickers-defaults: ## Show default ticker options
+	@echo "$(YELLOW)Showing default ticker options...$(RESET)"
+	$(CLI) tickers defaults
+
+tickers-reset: ## Reset to default tickers (40 S&P 500 stocks)
+	@echo "$(YELLOW)Resetting to default tickers...$(RESET)"
+	$(CLI) tickers update --reset-to-defaults
+
 # Utility targets
-check-env: ## Check if virtual environment exists
-	@if [ ! -d "$(VENV)" ]; then \
-		echo "$(RED)Virtual environment not found. Run 'make setup' first.$(RESET)"; \
+check-env: ## Check if uv environment is ready
+	@echo "$(YELLOW)Checking uv environment...$(RESET)"
+	@if ! command -v uv &> /dev/null; then \
+		echo "$(RED)Error: uv is not installed. Run 'make setup' first.$(RESET)"; \
 		exit 1; \
 	fi
+	@echo "$(GREEN)uv environment ready!$(RESET)"
 
-install-dev: check-env ## Install development dependencies
-	@echo "$(YELLOW)Installing development dependencies...$(RESET)"
-	$(PIP) install pytest flake8 black pytest-cov
+install-dev: check-env ## Install development dependencies with uv
+	@echo "$(YELLOW)Installing development dependencies with uv...$(RESET)"
+	$(UV) add --dev pytest flake8 black pytest-cov
 	@echo "$(GREEN)Development dependencies installed!$(RESET)"
-
-requirements: ## Generate requirements.txt from current environment
-	@echo "$(YELLOW)Generating requirements.txt...$(RESET)"
-	$(PIP) freeze > requirements.txt
-	@echo "$(GREEN)Requirements file updated!$(RESET)"
 
 # Documentation
 docs: ## Generate project documentation

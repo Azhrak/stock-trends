@@ -5,7 +5,7 @@ DEFAULT_TICKERS = [
     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'BRK-B', 'UNH', 'JNJ',
     'V', 'PG', 'HD', 'CVX', 'MA', 'BAC', 'ABBV', 'PFE', 'KO', 'AVGO',
     'PEP', 'TMO', 'COST', 'WMT', 'DIS', 'ABT', 'DHR', 'VZ', 'BMY', 'NEE',
-    'NFLX', 'ADBE', 'CRM', 'LLY', 'XOM', 'MRK', 'ACN', 'TMO', 'ORCL', 'INTC'
+    'NFLX', 'ADBE', 'CRM', 'LLY', 'XOM', 'MRK', 'ACN', 'NOW', 'ORCL', 'INTC'
 ]
 
 # Date ranges

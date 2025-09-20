@@ -280,6 +280,173 @@ class StockTrendsCLI:
         
         logger.info("Project setup validation passed!")
         return 0
+    
+    def list_tickers(self, args):
+        """List currently configured stock tickers."""
+        try:
+            from utils.ticker_manager import TickerManager
+            
+            ticker_manager = TickerManager()
+            tickers = ticker_manager.load_tickers()
+            
+            logger.info("=" * 60)
+            logger.info("CURRENT STOCK TICKERS")
+            logger.info("=" * 60)
+            
+            if args.validate:
+                logger.info("Validating tickers...")
+                validation = ticker_manager.validate_tickers(tickers)
+                
+                if validation['valid']:
+                    logger.info(f"✓ Valid tickers ({len(validation['valid'])}):")
+                    for ticker in validation['valid']:
+                        logger.info(f"  {ticker}")
+                
+                if validation['invalid']:
+                    logger.error(f"✗ Invalid tickers ({len(validation['invalid'])}):")
+                    for ticker in validation['invalid']:
+                        logger.error(f"  {ticker}")
+                
+                if validation['warnings']:
+                    logger.warning(f"⚠ Warnings ({len(validation['warnings'])}):")
+                    for warning in validation['warnings']:
+                        logger.warning(f"  {warning}")
+            else:
+                logger.info(f"Currently tracking {len(tickers)} stocks:")
+                for i, ticker in enumerate(tickers, 1):
+                    logger.info(f"  {i:2d}. {ticker}")
+            
+            logger.info("")
+            logger.info(f"Configuration file: {ticker_manager.get_config_path()}")
+            logger.info("Use 'uv run cli.py tickers update' to modify the list")
+            
+            return 0
+            
+        except Exception as e:
+            logger.error(f"Error listing tickers: {e}")
+            return 1
+    
+    def show_default_tickers(self, args):
+        """Show the default ticker list available in config.py."""
+        try:
+            logger.info("=" * 60)
+            logger.info("DEFAULT STOCK TICKERS (from config.py)")
+            logger.info("=" * 60)
+            
+            try:
+                from ingestion.config import DEFAULT_TICKERS
+                logger.info(f"Available default tickers ({len(DEFAULT_TICKERS)}):")
+                
+                # Display in rows of 5 for better readability
+                for i in range(0, len(DEFAULT_TICKERS), 5):
+                    row = DEFAULT_TICKERS[i:i+5]
+                    logger.info("  " + "  ".join(f"{ticker:<6}" for ticker in row))
+                
+                logger.info("")
+                logger.info("These tickers represent a subset of S&P 500 companies.")
+                logger.info("Use 'uv run cli.py tickers update --set [TICKERS]' to replace your current list.")
+                logger.info("Use 'uv run cli.py tickers update --add [TICKERS]' to add specific ones.")
+                
+            except ImportError:
+                logger.error("Could not import DEFAULT_TICKERS from config.py")
+                return 1
+                
+            return 0
+            
+        except Exception as e:
+            logger.error(f"Error showing default tickers: {e}")
+            return 1
+    
+    def update_tickers(self, args):
+        """Update the stock ticker configuration."""
+        try:
+            from utils.ticker_manager import TickerManager
+            
+            ticker_manager = TickerManager()
+            
+            if args.set:
+                # Replace entire list
+                new_tickers = [t.strip().upper() for t in args.set]
+                logger.info(f"Setting tickers to: {new_tickers}")
+                
+                # Validate first if requested
+                if args.validate:
+                    validation = ticker_manager.validate_tickers(new_tickers)
+                    if validation['invalid']:
+                        logger.error(f"Invalid tickers found: {validation['invalid']}")
+                        if not args.force:
+                            logger.error("Use --force to proceed anyway")
+                            return 1
+                
+                ticker_manager.save_tickers(new_tickers)
+                logger.info(f"✓ Updated ticker list with {len(new_tickers)} stocks")
+            
+            elif args.reset_to_defaults:
+                # Reset to defaults from config.py
+                try:
+                    from ingestion.config import DEFAULT_TICKERS
+                    logger.info(f"Resetting to {len(DEFAULT_TICKERS)} default tickers from config.py")
+                    
+                    # Validate first if requested
+                    if args.validate:
+                        validation = ticker_manager.validate_tickers(DEFAULT_TICKERS)
+                        if validation['invalid']:
+                            logger.error(f"Invalid default tickers found: {validation['invalid']}")
+                            if not args.force:
+                                logger.error("Use --force to proceed anyway")
+                                return 1
+                    
+                    ticker_manager.save_tickers(DEFAULT_TICKERS)
+                    logger.info(f"✓ Reset to default ticker list with {len(DEFAULT_TICKERS)} stocks")
+                    
+                except ImportError:
+                    logger.error("Could not import DEFAULT_TICKERS from config.py")
+                    return 1
+                
+            elif args.add:
+                # Add to existing list
+                tickers_to_add = [t.strip().upper() for t in args.add]
+                logger.info(f"Adding tickers: {tickers_to_add}")
+                
+                # Validate first if requested
+                if args.validate:
+                    validation = ticker_manager.validate_tickers(tickers_to_add)
+                    if validation['invalid']:
+                        logger.error(f"Invalid tickers found: {validation['invalid']}")
+                        if not args.force:
+                            logger.error("Use --force to proceed anyway")
+                            return 1
+                
+                updated_tickers = ticker_manager.add_tickers(tickers_to_add)
+                logger.info(f"✓ Added {len(tickers_to_add)} tickers. Total: {len(updated_tickers)}")
+                
+            elif args.remove:
+                # Remove from existing list
+                tickers_to_remove = [t.strip().upper() for t in args.remove]
+                logger.info(f"Removing tickers: {tickers_to_remove}")
+                
+                updated_tickers = ticker_manager.remove_tickers(tickers_to_remove)
+                logger.info(f"✓ Removed {len(tickers_to_remove)} tickers. Remaining: {len(updated_tickers)}")
+                
+            else:
+                logger.error("No action specified. Use --set, --add, --remove, or --reset-to-defaults")
+                return 1
+            
+            # Show final list
+            final_tickers = ticker_manager.load_tickers()
+            logger.info("")
+            logger.info("Updated ticker list:")
+            for i, ticker in enumerate(final_tickers, 1):
+                logger.info(f"  {i:2d}. {ticker}")
+            
+            logger.info("")
+            logger.info("💡 Remember to run 'make data' to download new data if you added stocks")
+            
+            return 0
+            
+        except Exception as e:
+            logger.error(f"Error updating tickers: {e}")
+            return 1
 
 def main():
     """Main CLI entry point."""
@@ -326,6 +493,37 @@ Examples:
     # Validation
     validate_parser = subparsers.add_parser('validate', help='Validate project setup')
     validate_parser.set_defaults(func=StockTrendsCLI().validate_setup)
+    
+    # Ticker management
+    tickers_parser = subparsers.add_parser('tickers', help='Manage stock ticker configuration')
+    tickers_subparsers = tickers_parser.add_subparsers(dest='tickers_command', help='Ticker management commands')
+    
+    # List tickers
+    list_parser = tickers_subparsers.add_parser('list', help='List current stock tickers')
+    list_parser.add_argument('--validate', action='store_true', 
+                           help='Validate that tickers are tradeable')
+    list_parser.set_defaults(func=StockTrendsCLI().list_tickers)
+    
+    # Show defaults
+    defaults_parser = tickers_subparsers.add_parser('defaults', help='Show default ticker list from config.py')
+    defaults_parser.set_defaults(func=StockTrendsCLI().show_default_tickers)
+    
+    # Update tickers
+    update_parser = tickers_subparsers.add_parser('update', help='Update stock ticker list')
+    update_group = update_parser.add_mutually_exclusive_group(required=True)
+    update_group.add_argument('--set', nargs='+', metavar='TICKER',
+                            help='Replace entire ticker list (e.g., --set AAPL MSFT GOOGL)')
+    update_group.add_argument('--add', nargs='+', metavar='TICKER',
+                            help='Add tickers to current list (e.g., --add NVDA AMD)')
+    update_group.add_argument('--remove', nargs='+', metavar='TICKER',
+                            help='Remove tickers from current list (e.g., --remove TSLA)')
+    update_group.add_argument('--reset-to-defaults', action='store_true',
+                            help='Reset to default tickers from config.py')
+    update_parser.add_argument('--validate', action='store_true',
+                             help='Validate tickers before updating')
+    update_parser.add_argument('--force', action='store_true',
+                             help='Force update even if validation fails')
+    update_parser.set_defaults(func=StockTrendsCLI().update_tickers)
     
     # Parse arguments
     args = parser.parse_args()
