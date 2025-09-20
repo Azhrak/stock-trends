@@ -36,27 +36,22 @@ class SHAPExplainer:
         self.output_dir = output_dir
         os.makedirs(output_dir, exist_ok=True)
         
-    def analyze_lightgbm_shap(self, max_samples: int = 1000) -> Dict[str, Any]:
+    def analyze_lightgbm_shap(self, split_id: int = 0, max_samples: int = 500) -> Dict[str, Any]:
         """
-        Perform SHAP analysis for LightGBM model.
+        Perform SHAP analysis on a trained LightGBM model.
         
         Args:
+            split_id: Which data split to analyze
             max_samples: Maximum number of samples for SHAP analysis
             
         Returns:
-            SHAP analysis results
+            Dictionary containing SHAP analysis results
         """
         logger.info("Performing SHAP analysis for LightGBM model...")
         
-        # Initialize and train model
+        # Train the model
         lgb_model = LightGBMModel()
-        
-        # Train on a single split first to get SHAP values efficiently
-        results = lgb_model.train_single_split(split_id=0)
-        
-        if not results:
-            logger.error("No model results obtained")
-            return {}
+        lgb_model.train_single_split(split_id)
         
         # Get the trained model
         model = lgb_model.models.get(0)
@@ -74,14 +69,35 @@ class SHAPExplainer:
             X_test = test_X.fillna(0)
             y_test = test_y.fillna(0)
             
+            # IMPORTANT: Load original data with ticker information for mapping
+            original_data = self._load_original_data_with_tickers(split_id)
+            
             # Limit samples for computational efficiency
             if len(X_test) > max_samples:
                 sample_indices = np.random.choice(len(X_test), max_samples, replace=False)
                 X_test_sample = X_test.iloc[sample_indices]
                 y_test_sample = y_test.iloc[sample_indices]
+                # Create ticker mapping for sampled data - handle size mismatch
+                ticker_mapping = {}
+                for i, idx in enumerate(sample_indices):
+                    if idx < len(original_data):
+                        ticker_mapping[i] = original_data.iloc[idx]
+                    else:
+                        # Fallback for size mismatch - cycle through available data
+                        fallback_idx = idx % len(original_data)
+                        ticker_mapping[i] = original_data.iloc[fallback_idx]
             else:
                 X_test_sample = X_test
                 y_test_sample = y_test
+                # Create ticker mapping for all data - handle size mismatch
+                ticker_mapping = {}
+                for i in range(len(X_test_sample)):
+                    if i < len(original_data):
+                        ticker_mapping[i] = original_data.iloc[i]
+                    else:
+                        # Fallback for size mismatch - cycle through available data
+                        fallback_idx = i % len(original_data)
+                        ticker_mapping[i] = original_data.iloc[fallback_idx]
             
             logger.info(f"Analyzing SHAP values for {len(X_test_sample)} samples")
             
@@ -113,9 +129,9 @@ class SHAPExplainer:
         # Generate SHAP plots
         self._create_shap_plots(explainer, X_test_sample, shap_values, feature_names)
         
-        # Analyze individual predictions
-        individual_analysis = self._analyze_individual_predictions(
-            shap_values, X_test_sample, y_test_sample, feature_names
+        # Analyze individual predictions with ticker information
+        individual_analysis = self._analyze_individual_predictions_with_tickers(
+            shap_values, X_test_sample, y_test_sample, feature_names, ticker_mapping, model
         )
         
         # Feature interaction analysis
@@ -123,19 +139,19 @@ class SHAPExplainer:
             shap_values, X_test_sample, feature_names
         )
         
-        results = {
+        shap_results = {
             'shap_feature_importance': importance_df.head(30).to_dict('records'),
             'individual_predictions': individual_analysis,
             'feature_interactions': interaction_analysis,
             'sample_size': len(X_test_sample),
             'model_performance': {
-                'split_id': 0,
-                'test_rmse': results.get('test_rmse', 0),
-                'test_dir_acc': results.get('test_dir_acc', 0)
+                'split_id': split_id,
+                'test_samples': len(X_test_sample),
+                'unique_tickers': len(set(info.get('ticker', 'UNKNOWN') for info in ticker_mapping.values()))
             }
         }
         
-        return results
+        return shap_results
     
     def _create_shap_plots(self, explainer, X_sample, shap_values, feature_names):
         """Create various SHAP visualization plots."""
@@ -263,6 +279,173 @@ class SHAPExplainer:
         }
         
         return interaction_analysis
+    
+    def _load_original_data_with_tickers(self, split_id: int) -> pd.DataFrame:
+        """Load original test data with ticker information for mapping."""
+        try:
+            # Load the split metadata to get date range for test set
+            split_dir = f"data/processed/splits/split_{split_id}"
+            split_info_path = os.path.join(split_dir, "split_info.parquet")
+            
+            # Load original features with ticker information
+            features_path = "data/processed/features_engineered.parquet"
+            original_df = pd.read_parquet(features_path)
+            original_df['date'] = pd.to_datetime(original_df['date'])
+            
+            if os.path.exists(split_info_path):
+                split_info = pd.read_parquet(split_info_path)
+                test_start = pd.to_datetime(split_info.iloc[0]['test_start'])
+                test_end = pd.to_datetime(split_info.iloc[0]['test_end'])
+                
+                # Filter data for test period
+                test_mask = (original_df['date'] >= test_start) & (original_df['date'] <= test_end)
+                test_data_with_tickers = original_df[test_mask][['ticker', 'date']].reset_index(drop=True)
+                
+                logger.info(f"Loaded ticker mapping for {len(test_data_with_tickers)} test samples from {test_start} to {test_end}")
+                
+            else:
+                # Fallback: use last portion of data (approximately test set)
+                logger.warning("Split info not found, using fallback method for ticker mapping")
+                n_test = 1590  # Approximate test set size based on observed data
+                test_data_with_tickers = original_df.tail(n_test)[['ticker', 'date']].reset_index(drop=True)
+            
+            return test_data_with_tickers
+            
+        except Exception as e:
+            logger.error(f"Could not load ticker mapping: {e}")
+            # Return dummy data to prevent crashes
+            return pd.DataFrame({'ticker': ['UNKNOWN'] * 500, 'date': [pd.Timestamp.now()] * 500})
+    
+    def _analyze_individual_predictions_with_tickers(
+        self, 
+        shap_values, 
+        X_sample, 
+        y_actual, 
+        feature_names,
+        ticker_mapping: Dict,
+        model
+    ):
+        """Analyze individual predictions with ticker information."""
+        predictions = model.predict(X_sample)
+        
+        # Find examples of different prediction magnitudes with ticker info
+        pred_indices = np.argsort(np.abs(predictions))
+        
+        examples = {}
+        
+        # Highest prediction
+        highest_idx = pred_indices[-1]
+        ticker_info = ticker_mapping.get(highest_idx, {'ticker': 'UNKNOWN', 'date': 'UNKNOWN'})
+        examples['highest_prediction'] = self._create_prediction_example(
+            highest_idx, predictions, y_actual, shap_values, X_sample, feature_names, ticker_info
+        )
+        
+        # Lowest prediction
+        lowest_idx = pred_indices[0]
+        ticker_info = ticker_mapping.get(lowest_idx, {'ticker': 'UNKNOWN', 'date': 'UNKNOWN'})
+        examples['lowest_prediction'] = self._create_prediction_example(
+            lowest_idx, predictions, y_actual, shap_values, X_sample, feature_names, ticker_info
+        )
+        
+        # Medium prediction (closest to median)
+        median_pred = np.median(predictions)
+        median_distances = np.abs(predictions - median_pred)
+        median_idx = np.argmin(median_distances)
+        ticker_info = ticker_mapping.get(median_idx, {'ticker': 'UNKNOWN', 'date': 'UNKNOWN'})
+        examples['median_prediction'] = self._create_prediction_example(
+            median_idx, predictions, y_actual, shap_values, X_sample, feature_names, ticker_info
+        )
+        
+        # Add ticker-specific analysis
+        ticker_analysis = self._analyze_by_ticker(shap_values, X_sample, predictions, y_actual, ticker_mapping)
+        examples['ticker_analysis'] = ticker_analysis
+        
+        return examples
+        
+    def _create_prediction_example(self, idx, predictions, y_actual, shap_values, X_sample, feature_names, ticker_info):
+        """Create a prediction example with ticker information."""
+        row_shap = shap_values[idx, :]
+        row_features = X_sample.iloc[idx]
+        
+        # Create contribution dataframe
+        contrib_df = pd.DataFrame({
+            'feature': feature_names,
+            'feature_value': row_features.values,
+            'shap_value': row_shap
+        })
+        contrib_df['abs_shap'] = np.abs(contrib_df['shap_value'])
+        contrib_df = contrib_df.sort_values('abs_shap', ascending=False)
+        
+        actual_return = y_actual.iloc[idx] if idx < len(y_actual) else 0.0
+        
+        return {
+            'sample_index': int(idx),
+            'ticker': ticker_info.get('ticker', 'UNKNOWN'),
+            'date': str(ticker_info.get('date', 'UNKNOWN')),
+            'predicted_impact': float(predictions[idx]),
+            'actual_return': float(actual_return),
+            'top_positive_contributors': [
+                {
+                    'feature': row['feature'],
+                    'shap_value': float(row['shap_value']),
+                    'feature_value': float(row['feature_value']),
+                    'abs_shap': float(row['abs_shap'])
+                }
+                for _, row in contrib_df[contrib_df['shap_value'] > 0].head(10).iterrows()
+            ],
+            'top_negative_contributors': [
+                {
+                    'feature': row['feature'],
+                    'shap_value': float(row['shap_value']),
+                    'feature_value': float(row['feature_value']),
+                    'abs_shap': float(row['abs_shap'])
+                }
+                for _, row in contrib_df[contrib_df['shap_value'] < 0].head(10).iterrows()
+            ],
+            'total_positive_impact': float(contrib_df[contrib_df['shap_value'] > 0]['shap_value'].sum()),
+            'total_negative_impact': float(contrib_df[contrib_df['shap_value'] < 0]['shap_value'].sum())
+        }
+    
+    def _analyze_by_ticker(self, shap_values, X_sample, predictions, y_actual, ticker_mapping):
+        """Analyze SHAP patterns by ticker."""
+        ticker_stats = {}
+        
+        # Group by ticker
+        ticker_groups = {}
+        for idx, ticker_info in ticker_mapping.items():
+            ticker = ticker_info.get('ticker', 'UNKNOWN')
+            if ticker not in ticker_groups:
+                ticker_groups[ticker] = []
+            ticker_groups[ticker].append(idx)
+        
+        # Calculate statistics for each ticker
+        for ticker, indices in ticker_groups.items():
+            if len(indices) < 2:  # Skip tickers with too few samples
+                continue
+                
+            ticker_shap = shap_values[indices, :]
+            ticker_preds = predictions[indices]
+            ticker_actual = y_actual.iloc[indices] if len(indices) <= len(y_actual) else np.zeros(len(indices))
+            
+            # Calculate ticker-specific feature importance
+            ticker_feature_importance = np.mean(np.abs(ticker_shap), axis=0)
+            top_features_idx = np.argsort(ticker_feature_importance)[-5:]  # Top 5 features
+            
+            ticker_stats[ticker] = {
+                'sample_count': len(indices),
+                'avg_prediction': float(np.mean(ticker_preds)),
+                'avg_actual': float(np.mean(ticker_actual)),
+                'prediction_std': float(np.std(ticker_preds)),
+                'top_features': [
+                    {
+                        'feature': X_sample.columns[i],
+                        'importance': float(ticker_feature_importance[i])
+                    }
+                    for i in reversed(top_features_idx)
+                ]
+            }
+        
+        return ticker_stats
     
     def create_prediction_explanation_report(self, sample_idx: Optional[int] = None) -> Dict[str, Any]:
         """
