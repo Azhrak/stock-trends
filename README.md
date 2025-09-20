@@ -18,6 +18,7 @@ A comprehensive machine learning pipeline for predicting stock price movements u
     - [Environment Variables (Optional)](#environment-variables-optional)
     - [Alternative CLI Usage](#alternative-cli-usage)
   - [How to Use This Tool](#how-to-use-this-tool)
+    - [Quick Start: Get Predictions for Your Stocks](#quick-start-get-predictions-for-your-stocks)
     - [What This Tool Does](#what-this-tool-does)
     - [Input: What You Provide](#input-what-you-provide)
     - [Expected Outcomes: What You Get](#expected-outcomes-what-you-get)
@@ -161,6 +162,34 @@ make cli-validate         # Same as: uv run cli.py validate (unified interface)
 
 ## How to Use This Tool<a name="how-to-use-this-tool"></a>
 
+### Quick Start: Get Predictions for Your Stocks<a name="quick-start-get-predictions-for-your-stocks"></a>
+
+**Want stock predictions right now? Here's the fastest path:**
+
+```bash
+# 1. Setup (one-time only)
+make setup
+
+# 2. Get predictions for default stocks (AAPL, MSFT, GOOGL, etc.)
+make all    # Takes 15-30 minutes, generates predictions for 8 major tech stocks
+
+# 3. View your predictions
+make analyze AAPL        # See Apple predictions and explanations
+make analyze MSFT        # See Microsoft predictions  
+make detailed TSLA       # Get detailed Tesla analysis with SHAP features
+
+# 4. Add your own stocks and get fresh predictions
+uv run cli.py tickers update --add NVDA AMD INTC
+make fresh NVDA          # Get fresh analysis for NVIDIA
+```
+
+**What you get:**
+
+- **12-week return predictions** for each stock (e.g., "AAPL: +5.2% expected return")
+- **Confidence levels** and prediction uncertainty
+- **Why each prediction was made** (which technical indicators drove it)
+- **Buy/Hold/Sell signals** based on predicted returns
+
 ### What This Tool Does<a name="what-this-tool-does"></a>
 
 This tool predicts **12-week forward stock returns** using machine learning models trained on technical analysis indicators. It helps you:
@@ -250,10 +279,63 @@ ls models/           # Trained models and performance metrics
 
 #### Step 3: Interpret Predictions
 
-```python
-# Example: Reading model predictions
-import json
+**A. Quick Command-Line Analysis (Recommended)**
 
+```bash
+# Get predictions for specific stocks
+make analyze AAPL        # Shows: prediction, confidence, top features
+make detailed TSLA       # Shows: detailed SHAP analysis, feature explanations
+make ticker-list         # List all stocks with available predictions
+
+# Example output for Apple:
+# AAPL Analysis:
+# - Sample count: 42 predictions  
+# - Average prediction: 0.0310 (3.10% expected return over 12 weeks)
+# - Top features: OBV, volatility_12w, price_position_26w
+# - Prediction confidence: High (low volatility)
+```
+
+**B. Access Raw Prediction Data (Advanced Users)**
+
+```python
+# Load the latest prediction report
+import json
+import glob
+
+# Find the most recent prediction report
+report_files = glob.glob("reports/prediction_explanation_report_*.json")
+latest_report = max(report_files, key=lambda f: f.split('_')[-1])
+
+with open(latest_report) as f:
+    predictions = json.load(f)
+
+# View predictions by ticker
+ticker_data = predictions['ticker_analysis']
+for ticker, data in ticker_data.items():
+    avg_return = data['avg_prediction']
+    confidence = data['prediction_std']  # Lower = more confident
+    sample_count = data['sample_count']
+    
+    # Interpret the prediction
+    direction = "🔺 BUY" if avg_return > 0.02 else "🔻 SELL" if avg_return < -0.02 else "➡️ HOLD"
+    confidence_level = "High" if confidence < 0.005 else "Medium" if confidence < 0.01 else "Low"
+    
+    print(f"{ticker}: {direction}")
+    print(f"  Expected 12-week return: {avg_return:+.1%}")
+    print(f"  Confidence: {confidence_level}")
+    print(f"  Based on {sample_count} predictions")
+    print()
+
+# View top predictive features globally
+top_features = predictions['feature_importance'][:5]
+print("Most important technical indicators:")
+for i, feature in enumerate(top_features, 1):
+    print(f"{i}. {feature['feature']}: {feature['importance']:.4f}")
+```
+
+**C. Compare Model Performance**
+
+```python
 # Load performance comparison
 with open('models/model_comparison.json') as f:
     comparison = json.load(f)
@@ -261,15 +343,10 @@ with open('models/model_comparison.json') as f:
 print(f"Best model: {comparison['best_model']['name']}")
 print(f"Test RMSE: {comparison['best_model']['test_rmse']:.4f}")
 print(f"Directional accuracy: {comparison['best_model']['directional_accuracy']:.1%}")
-
-# Load individual stock predictions (if available)
-with open('reports/stock_predictions.json') as f:
-    predictions = json.load(f)
-    
-for stock, pred in predictions.items():
-    direction = "UP" if pred['predicted_return'] > 0.02 else "DOWN" if pred['predicted_return'] < -0.02 else "HOLD"
-    print(f"{stock}: {direction} ({pred['predicted_return']:+.1%} predicted return)")
+print(f"Recommended for trading: {'Yes' if comparison['best_model']['directional_accuracy'] > 0.6 else 'No'}")
 ```
+
+````
 
 #### Step 4: Customize for Your Use Case
 
@@ -288,7 +365,7 @@ make tickers-reset        # Reset to all defaults
 # Then re-run pipeline with new stocks
 make data features models  # Traditional approach
 # Or: make cli-all         # Unified approach (full pipeline)
-```
+````
 
 **B. Adjust Prediction Horizon**
 
@@ -308,32 +385,118 @@ make backtest   # Only run trading simulation
 
 ### Real-World Application Examples<a name="real-world-application-examples"></a>
 
-#### Example 1: Weekly Stock Selection
+#### Example 1: Weekly Stock Selection for Investment
+
+**Scenario**: You want to pick the best 2-3 stocks from your watchlist for the next quarter.
 
 ```bash
-# 1. Run pipeline on your watchlist
-# 2. Check reports/stock_predictions.json for top-ranked stocks
-# 3. Use SHAP analysis to understand why certain stocks are predicted to rise
-# 4. Consider position sizing based on prediction confidence
+# 1. Setup your watchlist
+uv run cli.py tickers update --set AAPL MSFT GOOGL AMZN TSLA NVDA AMD INTC
+
+# 2. Generate predictions
+make all  # Takes 20-30 minutes
+
+# 3. Analyze each stock quickly
+make analyze AAPL    # Expected return: +3.1%, High confidence
+make analyze MSFT    # Expected return: +2.8%, Medium confidence  
+make analyze GOOGL   # Expected return: -1.2%, Low confidence
+# ... continue for all stocks
+
+# 4. Deep dive on promising candidates
+make detailed AAPL   # Why is Apple predicted to rise? (SHAP analysis)
+make detailed MSFT   # What technical indicators support Microsoft?
+
+# 5. Make investment decision
+# Choose stocks with: 
+# - Positive expected returns (>2%)
+# - High confidence (low prediction standard deviation)
+# - Clear technical indicator support
 ```
 
-#### Example 2: Strategy Validation
+**Result**: You get data-driven stock picks with explanations for why each is expected to perform well.
+
+#### Example 2: Strategy Validation and Risk Assessment
+
+**Scenario**: You want to test if your favorite stocks actually outperform the market.
 
 ```bash
-# 1. Backtest results show historical performance
-# 2. Compare model predictions vs buy-and-hold
-# 3. Analyze transaction costs impact on returns
-# 4. Use feature importance to refine your manual analysis
+# 1. Add your favorite stocks + benchmark
+uv run cli.py tickers update --set SPY QQQ AAPL TSLA BTC-USD NVDA
+
+# 2. Run full analysis with backtesting
+make all
+
+# 3. Compare results
+python -c "
+import json
+with open('models/model_comparison.json') as f:
+    data = json.load(f)
+print(f'Model accuracy: {data[\"best_model\"][\"directional_accuracy\"]:.1%}')
+print(f'Better than random: {\"Yes\" if data[\"best_model\"][\"directional_accuracy\"] > 0.55 else \"No\"}')
+"
+
+# 4. Check individual stock performance
+make analyze SPY     # Benchmark performance
+make analyze AAPL    # Your stock vs benchmark
 ```
 
-#### Example 3: Research and Education
+**Result**: You learn which of your stocks the model thinks will outperform and why.
+
+#### Example 3: Technical Analysis Validation
+
+**Scenario**: You use technical analysis and want to see which indicators actually predict returns.
 
 ```bash
-# 1. Understand which technical indicators actually predict returns
-# 2. Compare tree-based (LightGBM) vs neural network (Transformer) approaches
-# 3. Learn about realistic trading costs and market frictions
-# 4. Study model explainability with SHAP analysis
+# 1. Run the pipeline
+make all
+
+# 2. Check feature importance
+python -c "
+import json
+import glob
+report_file = max(glob.glob('reports/prediction_explanation_report_*.json'))
+with open(report_file) as f:
+    data = json.load(f)
+
+print('Top 10 most predictive technical indicators:')
+for i, feature in enumerate(data['feature_importance'][:10], 1):
+    print(f'{i:2d}. {feature[\"feature\"]:20s} {feature[\"importance\"]:.4f}')
+"
+
+# 3. Understand what each indicator means
+make detailed AAPL  # See how these indicators affect Apple specifically
 ```
+
+**Result**: You discover which technical indicators actually have predictive power (spoiler: OBV and volatility measures are usually top performers).
+
+#### Example 4: Monthly Portfolio Rebalancing
+
+**Scenario**: You rebalance your portfolio monthly and want ML-driven insights.
+
+```bash
+# Setup: Create a monthly cron job or reminder
+
+# Monthly workflow:
+# 1. Update data with latest prices
+make data
+
+# 2. Get fresh predictions
+make models explainability
+
+# 3. Review each holding
+for ticker in AAPL MSFT GOOGL; do
+    make analyze $ticker
+done
+
+# 4. Look for new opportunities
+make ticker-list  # See all available stocks
+make analyze NVDA  # Check a new candidate
+
+# 5. Document your decisions
+echo "$(date): Portfolio review based on ML predictions" >> investment_log.txt
+```
+
+**Result**: Monthly data-driven portfolio decisions with documented reasoning.
 
 ### Understanding the Output<a name="understanding-the-output"></a>
 
