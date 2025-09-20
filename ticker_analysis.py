@@ -146,32 +146,51 @@ def print_ticker_analysis(analysis: Dict[str, Any], detailed: bool = False):
         avg_actual = stats['avg_actual']
         std_dev = stats['prediction_std']
         
-        print(f"\n📊 MODEL PREDICTION SUMMARY:")
-        print(f"  {explain_prediction_value(avg_pred)}")
-        print(f"  Based on {stats['sample_count']} predictions over the test period")
-        print(f"  {explain_model_confidence(std_dev)}")
+    print(f"\n📊 MODEL PREDICTION SUMMARY:")
+    print(f"  {explain_prediction_value(avg_pred)}")
+    print(f"  Based on {stats['sample_count']} predictions over the test period")
+    
+    # Display date range if available
+    if 'date_range_start' in stats and 'date_range_end' in stats:
+        date_start = stats['date_range_start']
+        date_end = stats['date_range_end']
+        print(f"  📅 Analysis period: {date_start} to {date_end}")
         
-        print(f"\n📈 ACTUAL PERFORMANCE:")
-        print(f"  {compare_prediction_vs_actual(avg_pred, avg_actual)}")
+        # Calculate approximate weeks
+        try:
+            from datetime import datetime
+            start_date = datetime.strptime(date_start, '%Y-%m-%d')
+            end_date = datetime.strptime(date_end, '%Y-%m-%d')
+            weeks = (end_date - start_date).days // 7
+            print(f"  ⏱️ Period length: ~{weeks} weeks")
+        except:
+            print(f"  ⏱️ Period length: ~12 weeks (estimated)")
+    else:
+        print(f"  📅 Analysis period: Past 12 weeks (estimated)")
+    
+    print(f"  {explain_model_confidence(std_dev)}")
+    
+    print(f"\n📈 ACTUAL PERFORMANCE:")
+    print(f"  {compare_prediction_vs_actual(avg_pred, avg_actual)}")
         
-        print(f"\n🔍 WHAT DRIVES {ticker} PREDICTIONS:")
-        print(f"  The model focuses on these key factors:")
-        for i, feature in enumerate(stats['top_features'][:5], 1):
-            feature_name = feature['feature']
-            importance = feature['importance']
-            explanation = explain_feature(feature_name)
-            print(f"    {i}. {explanation}")
-            if importance > 0.004:
-                print(f"       ⭐ Very important for {ticker} predictions")
-            elif importance > 0.002:
-                print(f"       ⚠️ Moderately important for {ticker} predictions")
-            else:
-                print(f"       📍 Minor factor for {ticker} predictions")
-        
-        print(f"\n💡 INVESTMENT INSIGHTS:")
-        insights = generate_investment_insights(ticker, stats, avg_pred, avg_actual)
-        for insight in insights:
-            print(f"  • {insight}")
+    print(f"\n🔍 WHAT DRIVES {ticker} PREDICTIONS:")
+    print(f"  The model focuses on these key factors:")
+    for i, feature in enumerate(stats['top_features'][:5], 1):
+        feature_name = feature['feature']
+        importance = feature['importance']
+        explanation = explain_feature(feature_name)
+        print(f"    {i}. {explanation}")
+        if importance > 0.004:
+            print(f"       ⭐ Very important for {ticker} predictions")
+        elif importance > 0.002:
+            print(f"       ⚠️ Moderately important for {ticker} predictions")
+        else:
+            print(f"       📍 Minor factor for {ticker} predictions")
+    
+    print(f"\n💡 INVESTMENT INSIGHTS:")
+    insights = generate_investment_insights(ticker, stats, avg_pred, avg_actual)
+    for insight in insights:
+        print(f"  • {insight}")
     
     # Print specific examples with clear explanations
     if analysis['examples']:

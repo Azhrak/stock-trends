@@ -410,13 +410,23 @@ class SHAPExplainer:
         """Analyze SHAP patterns by ticker."""
         ticker_stats = {}
         
-        # Group by ticker
+        # Group by ticker and collect dates
         ticker_groups = {}
+        ticker_dates = {}
         for idx, ticker_info in ticker_mapping.items():
             ticker = ticker_info.get('ticker', 'UNKNOWN')
             if ticker not in ticker_groups:
                 ticker_groups[ticker] = []
+                ticker_dates[ticker] = []
             ticker_groups[ticker].append(idx)
+            # Store date information for date range calculation
+            date_val = ticker_info.get('date', pd.Timestamp.now())
+            if isinstance(date_val, str):
+                try:
+                    date_val = pd.to_datetime(date_val)
+                except:
+                    date_val = pd.Timestamp.now()
+            ticker_dates[ticker].append(date_val)
         
         # Calculate statistics for each ticker
         for ticker, indices in ticker_groups.items():
@@ -427,6 +437,11 @@ class SHAPExplainer:
             ticker_preds = predictions[indices]
             ticker_actual = y_actual.iloc[indices] if len(indices) <= len(y_actual) else np.zeros(len(indices))
             
+            # Calculate date range for this ticker
+            dates = ticker_dates[ticker]
+            date_start = min(dates).strftime('%Y-%m-%d') if dates else 'Unknown'
+            date_end = max(dates).strftime('%Y-%m-%d') if dates else 'Unknown'
+            
             # Calculate ticker-specific feature importance
             ticker_feature_importance = np.mean(np.abs(ticker_shap), axis=0)
             top_features_idx = np.argsort(ticker_feature_importance)[-5:]  # Top 5 features
@@ -436,6 +451,8 @@ class SHAPExplainer:
                 'avg_prediction': float(np.mean(ticker_preds)),
                 'avg_actual': float(np.mean(ticker_actual)),
                 'prediction_std': float(np.std(ticker_preds)),
+                'date_range_start': date_start,
+                'date_range_end': date_end,
                 'top_features': [
                     {
                         'feature': X_sample.columns[i],
