@@ -402,9 +402,9 @@ The enhanced explainability system now provides detailed analysis for individual
 
 ```bash
 # Analyze specific stocks
-uv run python ticker_analysis.py --list           # List all available tickers
-uv run python ticker_analysis.py AAPL            # Analyze Apple stock
-uv run python ticker_analysis.py TSLA --detailed # Detailed Tesla analysis
+uv run ticker_analysis.py --list           # List all available tickers
+uv run ticker_analysis.py AAPL             # Analyze Apple stock
+uv run ticker_analysis.py TSLA --detailed  # Detailed Tesla analysis
 
 # Example output for AAPL:
 # - Sample count: 49 predictions
