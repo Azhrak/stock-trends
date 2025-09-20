@@ -394,7 +394,30 @@ uv run cli.py tickers update --reset-to-defaults  # Reset to 40 S&P stocks
 ### 5. Explainability Analysis
 - **Feature Importance**: Traditional LightGBM importance rankings
 - **SHAP Analysis**: Individual prediction explanations and global feature attribution
+- **Ticker-Specific Analysis**: Stock-by-stock model behavior and feature importance
 - **Model Validation**: Performance benchmarking and consistency checks
+
+#### Ticker-Specific Analysis
+The enhanced explainability system now provides detailed analysis for individual stocks:
+
+```bash
+# Analyze specific stocks
+uv run python ticker_analysis.py --list           # List all available tickers
+uv run python ticker_analysis.py AAPL            # Analyze Apple stock
+uv run python ticker_analysis.py TSLA --detailed # Detailed Tesla analysis
+
+# Example output for AAPL:
+# - Sample count: 49 predictions
+# - Average prediction: 0.0326 (3.26% expected return)
+# - Top features: OBV, price_position_26w, volatility_12w
+# - Specific prediction examples with dates and SHAP contributions
+```
+
+**Key Insights Available:**
+- **Per-Ticker Statistics**: Sample counts, average predictions, volatility
+- **Feature Importance by Stock**: How the model weighs features differently for each ticker
+- **Prediction Examples**: Specific dates and explanations for high/low predictions
+- **Model Behavior**: Understanding why the model makes different predictions for different stocks
 
 ## Output Reports
 
@@ -409,9 +432,15 @@ The pipeline generates comprehensive reports in the `reports/` directory:
 
 ### Data Reports
 - `lightgbm_explainability_report_*.json` - Comprehensive LightGBM analysis
-- `prediction_explanation_report_*.json` - SHAP-based prediction explanations
+- `prediction_explanation_report_*.json` - **SHAP-based prediction explanations with ticker information**
 - `validation_report_*.json` - Model validation and performance summary
 - `model_comparison_report.json` - Head-to-head model comparison
+
+**Enhanced Reports Now Include:**
+- Individual stock ticker names and dates for each prediction
+- Ticker-specific feature importance (e.g., what drives AAPL vs TSLA predictions)
+- Per-stock statistics and model behavior analysis
+- Easy filtering by ticker using the `ticker_analysis.py` tool
 
 ## Testing
 
