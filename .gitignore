@@ -246,5 +246,9 @@ mlruns/
 secrets.json
 api_keys.json
 
+# User configuration files
+config/tickers.txt
+
 # But keep example files
 !.env.example
+!config/tickers.example.txt

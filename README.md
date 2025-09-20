@@ -449,6 +449,26 @@ uv run cli.py test --coverage  # with coverage report
 
 ## Configuration
 
+### Ticker Configuration
+The project uses a file-based ticker configuration system:
+
+- **`config/tickers.example.txt`** - Template file (committed to git)
+- **`config/tickers.txt`** - Your personal configuration (gitignored)
+
+When you first run the project, `config/tickers.txt` is automatically created from the example file. You can then customize it without affecting version control.
+
+**Managing your ticker list:**
+```bash
+# View current tickers
+make tickers-list
+
+# Edit with CLI
+uv run cli.py tickers update --set AAPL MSFT GOOGL
+
+# Or edit the file directly
+vim config/tickers.txt
+```
+
 ### Model Parameters
 - **LightGBM**: Learning rate 0.05, early stopping after 100 rounds
 - **Transformer**: 6 layers, 8 attention heads, 128 hidden dimensions

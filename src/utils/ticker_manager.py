@@ -34,6 +34,21 @@ class TickerManager:
     
     def _create_default_config(self):
         """Create default ticker configuration file."""
+        # First, try to copy from example file
+        example_file = self.full_config_path.parent / "tickers.example.txt"
+        
+        if example_file.exists():
+            logger.info(f"Creating {self.config_file} from example file")
+            try:
+                # Copy content from example file
+                content = example_file.read_text()
+                self.full_config_path.write_text(content)
+                logger.info(f"Created ticker config from {example_file}")
+                return
+            except Exception as e:
+                logger.warning(f"Failed to copy from example file: {e}")
+        
+        # Fallback to programmatic defaults
         try:
             # Try to import from config.py for comprehensive defaults
             from ingestion.config import DEFAULT_TICKERS
