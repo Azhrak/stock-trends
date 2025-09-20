@@ -69,45 +69,177 @@ def get_ticker_feature_importance(report: Dict[str, Any], ticker: str) -> List[D
     return ticker_data.get('top_features', [])
 
 
+def explain_prediction_value(prediction: float) -> str:
+    """Explain what a prediction value means in investment terms."""
+    percentage = prediction * 100
+    if percentage > 10:
+        return f"Strong Buy signal ({percentage:.1f}% expected return over 12 weeks)"
+    elif percentage > 5:
+        return f"Buy signal ({percentage:.1f}% expected return over 12 weeks)"
+    elif percentage > 2:
+        return f"Moderate Buy ({percentage:.1f}% expected return over 12 weeks)"
+    elif percentage > -2:
+        return f"Neutral/Hold ({percentage:.1f}% expected return over 12 weeks)"
+    elif percentage > -5:
+        return f"Moderate Sell ({percentage:.1f}% expected loss over 12 weeks)"
+    else:
+        return f"Sell signal ({percentage:.1f}% expected loss over 12 weeks)"
+
+
+def explain_feature(feature_name: str) -> str:
+    """Explain what each feature means in plain English."""
+    explanations = {
+        'obv': "On-Balance Volume (buying/selling pressure from volume)",
+        'volatility_12w': "12-week price volatility (how much the stock price moves)",
+        'price_position_26w': "Price position within 26-week range (near highs/lows)",
+        'price_sma_26_ratio': "Price vs 26-week moving average (above/below trend)",
+        'atr_pct_12w': "Average True Range (daily volatility measure)",
+        'support_52w': "Distance from 52-week support level",
+        'resistance_52w': "Distance from 52-week resistance level",
+        'macd_signal': "MACD momentum indicator signal",
+        'rsi': "Relative Strength Index (overbought/oversold)",
+        'volume_sma_26': "Volume vs 26-week average (high/low trading activity)",
+        'price_sma_52_ratio': "Price vs 52-week moving average (long-term trend)",
+        'price_ema_26_ratio': "Price vs 26-week exponential moving average"
+    }
+    return explanations.get(feature_name, f"{feature_name} (technical indicator)")
+
+
+def explain_model_confidence(std_dev: float) -> str:
+    """Explain what the prediction standard deviation means."""
+    if std_dev < 0.003:
+        return "Very consistent predictions (high confidence)"
+    elif std_dev < 0.006:
+        return "Moderately consistent predictions (medium confidence)"
+    else:
+        return "Variable predictions (lower confidence, stock harder to predict)"
+
+
+def compare_prediction_vs_actual(prediction: float, actual: float) -> str:
+    """Compare predicted vs actual returns and explain the accuracy."""
+    pred_pct = prediction * 100
+    actual_pct = actual * 100
+    diff = abs(pred_pct - actual_pct)
+    
+    if diff < 1:
+        return f"✅ Very accurate (predicted {pred_pct:.1f}%, actual {actual_pct:.1f}%)"
+    elif diff < 3:
+        return f"✅ Good accuracy (predicted {pred_pct:.1f}%, actual {actual_pct:.1f}%)"
+    elif diff < 5:
+        return f"⚠️ Moderate accuracy (predicted {pred_pct:.1f}%, actual {actual_pct:.1f}%)"
+    else:
+        return f"❌ Low accuracy (predicted {pred_pct:.1f}%, actual {actual_pct:.1f}%)"
+
+
 def print_ticker_analysis(analysis: Dict[str, Any], detailed: bool = False):
-    """Print formatted ticker analysis."""
+    """Print formatted ticker analysis with clear explanations."""
     ticker = analysis['ticker']
     
     print(f"\n{'='*60}")
-    print(f"ANALYSIS FOR {ticker}")
+    print(f"INVESTMENT ANALYSIS FOR {ticker}")
     print(f"{'='*60}")
     
-    # Print ticker statistics
+    # Print ticker statistics with explanations
     if analysis['ticker_stats']:
         stats = analysis['ticker_stats']
-        print(f"\nTICKER STATISTICS:")
-        print(f"  Sample count: {stats['sample_count']}")
-        print(f"  Average prediction: {stats['avg_prediction']:.4f}")
-        print(f"  Average actual return: {stats['avg_actual']:.4f}")
-        print(f"  Prediction std dev: {stats['prediction_std']:.4f}")
+        avg_pred = stats['avg_prediction']
+        avg_actual = stats['avg_actual']
+        std_dev = stats['prediction_std']
         
-        print(f"\n  TOP 5 FEATURES FOR {ticker}:")
-        for i, feature in enumerate(stats['top_features'], 1):
-            print(f"    {i}. {feature['feature']:<20} importance: {feature['importance']:.4f}")
+        print(f"\n📊 MODEL PREDICTION SUMMARY:")
+        print(f"  {explain_prediction_value(avg_pred)}")
+        print(f"  Based on {stats['sample_count']} predictions over the test period")
+        print(f"  {explain_model_confidence(std_dev)}")
+        
+        print(f"\n📈 ACTUAL PERFORMANCE:")
+        print(f"  {compare_prediction_vs_actual(avg_pred, avg_actual)}")
+        
+        print(f"\n🔍 WHAT DRIVES {ticker} PREDICTIONS:")
+        print(f"  The model focuses on these key factors:")
+        for i, feature in enumerate(stats['top_features'][:5], 1):
+            feature_name = feature['feature']
+            importance = feature['importance']
+            explanation = explain_feature(feature_name)
+            print(f"    {i}. {explanation}")
+            if importance > 0.004:
+                print(f"       ⭐ Very important for {ticker} predictions")
+            elif importance > 0.002:
+                print(f"       ⚠️ Moderately important for {ticker} predictions")
+            else:
+                print(f"       📍 Minor factor for {ticker} predictions")
+        
+        print(f"\n💡 INVESTMENT INSIGHTS:")
+        insights = generate_investment_insights(ticker, stats, avg_pred, avg_actual)
+        for insight in insights:
+            print(f"  • {insight}")
     
-    # Print specific examples
+    # Print specific examples with clear explanations
     if analysis['examples']:
-        print(f"\nSPECIFIC PREDICTION EXAMPLES FOR {ticker}:")
+        print(f"\n📅 SPECIFIC PREDICTION EXAMPLES:")
         for example in analysis['examples']:
             data = example['data']
-            print(f"\n  {example['type'].upper()}:")
-            print(f"    Date: {data.get('date', 'N/A')}")
-            print(f"    Predicted impact: {data.get('predicted_impact', 0):.4f}")
-            print(f"    Actual return: {data.get('actual_return', 0):.4f}")
+            pred = data.get('predicted_impact', 0)
+            actual = data.get('actual_return', 0)
+            date = data.get('date', 'N/A')
+            
+            print(f"\n  {example['type'].replace('_', ' ').upper()}:")
+            print(f"    Date: {date}")
+            print(f"    {explain_prediction_value(pred)}")
+            print(f"    {compare_prediction_vs_actual(pred, actual)}")
             
             if detailed and 'top_positive_contributors' in data:
-                print(f"    Top positive contributors:")
+                print(f"    🔼 Why the model was bullish:")
                 for contrib in data['top_positive_contributors'][:3]:
-                    print(f"      {contrib['feature']:<20} SHAP: {contrib['shap_value']:+.4f}")
+                    feature_name = contrib['feature']
+                    shap_val = contrib['shap_value']
+                    impact_pct = shap_val * 100
+                    explanation = explain_feature(feature_name)
+                    print(f"      • {explanation}: +{impact_pct:.1f}% impact")
                     
-                print(f"    Top negative contributors:")
+                print(f"    🔽 Why the model was bearish:")
                 for contrib in data['top_negative_contributors'][:3]:
-                    print(f"      {contrib['feature']:<20} SHAP: {contrib['shap_value']:+.4f}")
+                    feature_name = contrib['feature']
+                    shap_val = contrib['shap_value']
+                    impact_pct = abs(shap_val) * 100
+                    explanation = explain_feature(feature_name)
+                    print(f"      • {explanation}: -{impact_pct:.1f}% impact")
+
+
+def generate_investment_insights(ticker: str, stats: Dict, avg_pred: float, avg_actual: float) -> List[str]:
+    """Generate actionable investment insights based on the analysis."""
+    insights = []
+    
+    # Overall model accuracy insight
+    accuracy_diff = abs(avg_pred - avg_actual)
+    if accuracy_diff < 0.01:
+        insights.append(f"Model is very accurate for {ticker} - predictions are reliable")
+    elif accuracy_diff < 0.03:
+        insights.append(f"Model has good accuracy for {ticker} - use with confidence")
+    else:
+        insights.append(f"Model has mixed accuracy for {ticker} - use predictions cautiously")
+    
+    # Prediction magnitude insight
+    if avg_pred > 0.05:
+        insights.append(f"{ticker} shows strong positive momentum signals")
+    elif avg_pred > 0.02:
+        insights.append(f"{ticker} shows moderate positive momentum")
+    elif avg_pred < -0.02:
+        insights.append(f"{ticker} shows concerning negative momentum")
+    else:
+        insights.append(f"{ticker} shows neutral momentum - sideways movement expected")
+    
+    # Top feature insights
+    top_features = [f['feature'] for f in stats['top_features'][:3]]
+    if 'obv' in top_features:
+        insights.append("Volume analysis is crucial - watch buying/selling pressure")
+    if any('volatility' in f for f in top_features):
+        insights.append("Price volatility is a key factor - expect price swings")
+    if any('position' in f for f in top_features):
+        insights.append("Price positioning matters - watch support/resistance levels")
+    if any('sma' in f or 'ema' in f for f in top_features):
+        insights.append("Moving averages are important - trend following strategy recommended")
+    
+    return insights
 
 
 def list_available_tickers(report: Dict[str, Any]) -> List[str]:
