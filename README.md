@@ -413,56 +413,68 @@ stock-trends/
 
 ```bash
 # Traditional pipeline (individual scripts)
-make setup              # Setup virtual environment
+make setup              # Setup project environment and dependencies
 make data               # Download and preprocess data
-make features           # Generate features
-make models             # Train baseline models
+make features           # Generate features for modeling
+make models             # Train baseline models (LightGBM and Transformer)
 make backtest           # Run backtesting analysis
-make explainability     # Generate explainability reports
+make explainability     # Generate model explainability reports
 make test               # Run unit tests
-make all                # Run complete pipeline
+make all                # Run complete end-to-end pipeline
 
-# CLI-based alternatives (unified interface)
-make cli-data           # Run data pipeline via CLI
-make cli-models         # Train models via CLI
-make cli-backtest       # Run backtesting via CLI
-make cli-explain        # Generate explainability via CLI
-make cli-test           # Run tests via CLI
-make cli-validate       # Validate setup via CLI
-make cli-all            # Run complete pipeline via CLI
+# Advanced pipeline commands
+make pipeline-data      # Complete data pipeline
+make pipeline-models    # Complete model training pipeline
+make pipeline-analysis  # Complete analysis pipeline
 
-# Ticker management
-make tickers-list       # List current stock tickers
-make tickers-defaults   # Show default ticker options (40 S&P 500 stocks)
-make tickers-reset      # Reset to default tickers
+# Ticker analysis (clean syntax)
+make ticker-list        # List all available tickers in explainability reports
+make analyze AAPL       # Analyze specific ticker (usage: make analyze AAPL)
+make detailed TSLA      # Detailed analysis with SHAP features (usage: make detailed TSLA)
+make fresh MSFT         # Generate fresh analysis + analyze ticker (usage: make fresh MSFT)
 
-# Ticker analysis (explainability)
-make ticker-list                    # List all available tickers in reports
-make ticker-analyze TICKER=AAPL     # Analyze specific ticker
-make ticker-detailed TICKER=TSLA    # Detailed analysis with SHAP features
+# Analysis utilities
+make current-analysis   # Generate analysis with current data (latest split)
 
-# Utilities
+# Documentation
+make toc                # Generate table of contents for README.md
+make toc-preview        # Preview table of contents without modifying README.md
+make docs               # Generate project documentation
+
+# Development utilities
 make check-env          # Check if uv environment is ready
 make clean              # Clean temporary files and cache
 make format             # Format code with black
 make lint               # Run code quality checks
+make install-dev        # Install development dependencies
+
+# Docker (optional)
+make docker-build       # Build Docker image (optional)
+make docker-run         # Run pipeline in Docker (optional)
 ```
 
 ### CLI Commands<a name="cli-commands"></a>
 
 ```bash
-uv run cli.py data      # Data pipeline
-uv run cli.py models    # Model training
-uv run cli.py backtest  # Backtesting
-uv run cli.py explain   # Explainability
-uv run cli.py test      # Unit tests
-uv run cli.py validate  # Validate setup
+# Main pipeline commands
+uv run cli.py data      # Run data ingestion and preprocessing
+uv run cli.py models    # Train baseline models
+uv run cli.py backtest  # Run backtesting analysis
+uv run cli.py explain   # Generate explainability reports
+uv run cli.py all       # Run complete end-to-end pipeline
+uv run cli.py test      # Run unit tests
+uv run cli.py validate  # Validate project setup
 
 # Ticker management
-uv run cli.py tickers list                    # View current stocks
-uv run cli.py tickers defaults               # View available defaults
-uv run cli.py tickers update --add NVDA AMD  # Add stocks
-uv run cli.py tickers update --reset-to-defaults  # Reset to 40 S&P stocks
+uv run cli.py tickers list                    # List current stock tickers
+uv run cli.py tickers defaults               # Show default ticker list from config.py
+uv run cli.py tickers validate               # Validate current ticker list
+uv run cli.py tickers update --add NVDA AMD  # Add stocks to ticker list
+uv run cli.py tickers update --reset-to-defaults  # Reset to default tickers
+
+# Direct script alternatives
+uv run scripts/generate_toc.py               # Generate table of contents
+uv run scripts/generate_toc.py --preview     # Preview TOC without modifying file
 ```
 
 ## Pipeline Components<a name="pipeline-components"></a>
