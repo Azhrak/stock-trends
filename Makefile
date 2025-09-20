@@ -203,6 +203,21 @@ ticker-detailed: ## Detailed analysis of specific ticker (use TICKER=AAPL)
 	fi
 	$(PYTHON) ticker_analysis.py $(TICKER) --detailed
 
+# Current data analysis (using latest split with recent data)
+current-analysis: ## Generate analysis with current/recent data (2023-2024)
+	@echo "$(YELLOW)Generating analysis with current data (2023-2024)...$(RESET)"
+	$(PYTHON) -c "import sys; sys.path.append('src'); from explainability.shap_explainer import SHAPExplainer; explainer = SHAPExplainer(); explainer.create_prediction_explanation_report(split_id=14)"
+	@echo "$(GREEN)Current data analysis complete! Use ticker-analyze to view results.$(RESET)"
+
+current-ticker: ## Analyze specific ticker with current data (use TICKER=AAPL)
+	@echo "$(YELLOW)Analyzing $(TICKER) with current data...$(RESET)"
+	@if [ -z "$(TICKER)" ]; then \
+		echo "$(RED)Error: Please specify TICKER. Example: make current-ticker TICKER=AAPL$(RESET)"; \
+		exit 1; \
+	fi
+	@make current-analysis > /dev/null 2>&1
+	$(PYTHON) ticker_analysis.py $(TICKER)
+
 # Utility targets
 check-env: ## Check if uv environment is ready
 	@echo "$(YELLOW)Checking uv environment...$(RESET)"

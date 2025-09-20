@@ -54,15 +54,15 @@ class SHAPExplainer:
         lgb_model.train_single_split(split_id)
         
         # Get the trained model
-        model = lgb_model.models.get(0)
+        model = lgb_model.models.get(split_id)
         if model is None:
-            logger.error("No trained model found")
+            logger.error(f"No trained model found for split {split_id}")
             return {}
         
         # Load test data for SHAP analysis
         try:
             # Use split data directly from the model loading
-            train_X, train_y, val_X, val_y, test_X, test_y = lgb_model.load_split_data(0)
+            train_X, train_y, val_X, val_y, test_X, test_y = lgb_model.load_split_data(split_id)
             
             # Use test data for SHAP analysis
             feature_cols = test_X.columns.tolist()
@@ -464,12 +464,13 @@ class SHAPExplainer:
         
         return ticker_stats
     
-    def create_prediction_explanation_report(self, sample_idx: Optional[int] = None) -> Dict[str, Any]:
+    def create_prediction_explanation_report(self, sample_idx: Optional[int] = None, split_id: int = 0) -> Dict[str, Any]:
         """
         Create detailed explanation for a specific prediction.
         
         Args:
             sample_idx: Index of sample to explain (random if None)
+            split_id: Which data split to analyze (default: 0)
             
         Returns:
             Detailed prediction explanation
@@ -477,7 +478,7 @@ class SHAPExplainer:
         logger.info("Creating detailed prediction explanation...")
         
         # Perform SHAP analysis
-        shap_results = self.analyze_lightgbm_shap(max_samples=500)
+        shap_results = self.analyze_lightgbm_shap(split_id=split_id, max_samples=500)
         
         if not shap_results:
             return {}
