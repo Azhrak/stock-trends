@@ -28,7 +28,8 @@ RESET := \033[0m
 
 .PHONY: help setup clean data features models backtest explainability all test lint \
         cli-data cli-models cli-backtest cli-explain cli-test cli-validate cli-all \
-        tickers-list tickers-defaults tickers-reset pipeline-data pipeline-models pipeline-analysis
+        tickers-list tickers-defaults tickers-reset ticker-list ticker-analyze ticker-detailed \
+        pipeline-data pipeline-models pipeline-analysis
 
 help: ## Show this help message
 	@echo "$(BLUE)Stock Trends Prediction Project$(RESET)"
@@ -180,6 +181,27 @@ tickers-defaults: ## Show default ticker options
 tickers-reset: ## Reset to default tickers (40 S&P 500 stocks)
 	@echo "$(YELLOW)Resetting to default tickers...$(RESET)"
 	$(CLI) tickers update --reset-to-defaults
+
+# Ticker-specific analysis
+ticker-list: ## List all available tickers in explainability reports
+	@echo "$(YELLOW)Listing available tickers for analysis...$(RESET)"
+	$(PYTHON) ticker_analysis.py --list
+
+ticker-analyze: ## Analyze specific ticker (use TICKER=AAPL)
+	@echo "$(YELLOW)Analyzing ticker: $(TICKER)...$(RESET)"
+	@if [ -z "$(TICKER)" ]; then \
+		echo "$(RED)Error: Please specify TICKER. Example: make ticker-analyze TICKER=AAPL$(RESET)"; \
+		exit 1; \
+	fi
+	$(PYTHON) ticker_analysis.py $(TICKER)
+
+ticker-detailed: ## Detailed analysis of specific ticker (use TICKER=AAPL)
+	@echo "$(YELLOW)Running detailed analysis for ticker: $(TICKER)...$(RESET)"
+	@if [ -z "$(TICKER)" ]; then \
+		echo "$(RED)Error: Please specify TICKER. Example: make ticker-detailed TICKER=TSLA$(RESET)"; \
+		exit 1; \
+	fi
+	$(PYTHON) ticker_analysis.py $(TICKER) --detailed
 
 # Utility targets
 check-env: ## Check if uv environment is ready
