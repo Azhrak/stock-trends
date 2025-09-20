@@ -199,6 +199,15 @@ docs: ## Generate project documentation
 	@make help | tail -n +4 >> README_generated.md
 	@echo "$(GREEN)Documentation generated: README_generated.md$(RESET)"
 
+toc: ## Generate table of contents for README.md
+	@echo "$(YELLOW)Generating table of contents for README.md...$(RESET)"
+	$(UV) run mdformat --wrap=no --end-of-line=keep README.md
+	@echo "$(GREEN)Table of contents updated in README.md$(RESET)"
+
+toc-preview: ## Preview table of contents without modifying README.md
+	@echo "$(YELLOW)Previewing table of contents...$(RESET)"
+	$(UV) run mdformat --check --wrap=no --end-of-line=keep README.md
+
 docker-build: ## Build Docker image (optional)
 	@echo "$(YELLOW)Building Docker image...$(RESET)"
 	docker build -t stock-trends .
