@@ -238,9 +238,12 @@ class SHAPExplainer:
             feature_vals = X_sample.iloc[:, i]
             shap_vals = shap_values[:, i]
             
-            if len(np.unique(feature_vals)) > 1:  # Avoid constant features
+            # Check for valid data and avoid constant features
+            if len(np.unique(feature_vals)) > 1 and not np.any(np.isnan(feature_vals)) and not np.any(np.isnan(shap_vals)):
                 correlation = np.corrcoef(feature_vals, shap_vals)[0, 1]
-                feature_shap_corr[feature] = correlation
+                # Only store if correlation is valid (not NaN)
+                if not np.isnan(correlation):
+                    feature_shap_corr[feature] = float(correlation)  # Convert to Python float
         
         # Sort by absolute correlation
         sorted_corr = sorted(feature_shap_corr.items(), 
