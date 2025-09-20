@@ -154,7 +154,7 @@ def print_ticker_analysis(analysis: Dict[str, Any], detailed: bool = False):
     if 'date_range_start' in stats and 'date_range_end' in stats:
         date_start = stats['date_range_start']
         date_end = stats['date_range_end']
-        print(f"  📅 Analysis period: {date_start} to {date_end}")
+        print(f"  Analysis period: {date_start} to {date_end}")
         
         # Calculate approximate weeks
         try:
@@ -162,11 +162,11 @@ def print_ticker_analysis(analysis: Dict[str, Any], detailed: bool = False):
             start_date = datetime.strptime(date_start, '%Y-%m-%d')
             end_date = datetime.strptime(date_end, '%Y-%m-%d')
             weeks = (end_date - start_date).days // 7
-            print(f"  ⏱️ Period length: ~{weeks} weeks")
+            print(f"  Period length: ~{weeks} weeks")
         except:
-            print(f"  ⏱️ Period length: ~12 weeks (estimated)")
+            print(f"  Period length: ~12 weeks (estimated)")
     else:
-        print(f"  📅 Analysis period: Past 12 weeks (estimated)")
+        print(f"  Analysis period: Past 12 weeks (estimated)")
     
     print(f"  {explain_model_confidence(std_dev)}")
     
@@ -194,7 +194,7 @@ def print_ticker_analysis(analysis: Dict[str, Any], detailed: bool = False):
     
     # Print specific examples with clear explanations
     if analysis['examples']:
-        print(f"\n📅 SPECIFIC PREDICTION EXAMPLES:")
+        print(f"\n📋 SPECIFIC PREDICTION EXAMPLES:")
         for example in analysis['examples']:
             data = example['data']
             pred = data.get('predicted_impact', 0)
