@@ -343,6 +343,11 @@ make tickers-list       # List current stock tickers
 make tickers-defaults   # Show default ticker options (40 S&P 500 stocks)
 make tickers-reset      # Reset to default tickers
 
+# Ticker analysis (explainability)
+make ticker-list                    # List all available tickers in reports
+make ticker-analyze TICKER=AAPL     # Analyze specific ticker
+make ticker-detailed TICKER=TSLA    # Detailed analysis with SHAP features
+
 # Utilities
 make check-env          # Check if uv environment is ready
 make clean              # Clean temporary files and cache
@@ -401,15 +406,20 @@ uv run cli.py tickers update --reset-to-defaults  # Reset to 40 S&P stocks
 The enhanced explainability system now provides detailed analysis for individual stocks:
 
 ```bash
-# Analyze specific stocks
+# Using Makefile commands (recommended)
+make ticker-list                    # List all available tickers
+make ticker-analyze TICKER=AAPL     # Analyze Apple stock
+make ticker-detailed TICKER=TSLA    # Detailed Tesla analysis
+
+# Or using direct Python commands
 uv run ticker_analysis.py --list           # List all available tickers
 uv run ticker_analysis.py AAPL             # Analyze Apple stock
 uv run ticker_analysis.py TSLA --detailed  # Detailed Tesla analysis
 
 # Example output for AAPL:
-# - Sample count: 49 predictions
-# - Average prediction: 0.0326 (3.26% expected return)
-# - Top features: OBV, price_position_26w, volatility_12w
+# - Sample count: 42 predictions
+# - Average prediction: 0.0310 (3.10% expected return)
+# - Top features: OBV, volatility_12w, price_position_26w
 # - Specific prediction examples with dates and SHAP contributions
 ```
 
